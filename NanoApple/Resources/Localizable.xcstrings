@@ -2401,6 +2401,28 @@
         }
       }
     },
+    "studio.prompt.enhanced.copy" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copier le prompt amélioré"
+          }
+        }
+      }
+    },
+    "studio.prompt.enhanced.placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le prompt amélioré apparaîtra ici après le lancement de la génération."
+          }
+        }
+      }
+    },
     "studio.prompt.guide" : {
       "extractionState" : "extracted_with_value",
       "localizations" : {
