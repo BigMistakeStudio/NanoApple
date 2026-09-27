@@ -1,0 +1,28 @@
+# macOS and Xcode local state
+.DS_Store
+DerivedData/
+build/
+*.xcuserstate
+*.xcuserdatad/
+*.xccheckout
+*.xcscmblueprint
+
+# Python-generated files in the bundled runtime
+__pycache__/
+*.py[cod]
+
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.p12
+*.p8
+*.mobileprovision
+
+# Downloaded model weights, generated media, and logs
+*.safetensors
+*.gguf
+*.ckpt
+*.pt
+*.pth
+*.log

@@ -1,0 +1,3132 @@
+{
+  "sourceLanguage" : "fr",
+  "strings" : {
+    "…" : {
+
+    },
+    "·" : {
+
+    },
+    "%@ : %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ : %2$@"
+          }
+        }
+      }
+    },
+    "%@ : %lld × %lld px" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ : %2$lld × %3$lld px"
+          }
+        }
+      }
+    },
+    "%@ / %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ / %2$@"
+          }
+        }
+      }
+    },
+    "%@ %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@ %2$@"
+          }
+        }
+      }
+    },
+    "%@: %lld" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$@: %2$lld"
+          }
+        }
+      }
+    },
+    "%lld" : {
+
+    },
+    "%lld %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@"
+          }
+        }
+      }
+    },
+    "%lld %@ · %@" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld %2$@ · %3$@"
+          }
+        }
+      }
+    },
+    "%lld × %lld" : {
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld × %2$lld"
+          }
+        }
+      }
+    },
+    "×" : {
+
+    },
+    "2× / 4×" : {
+
+    },
+    "6" : {
+
+    },
+    "app.name" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "NanoApple"
+          }
+        }
+      }
+    },
+    "characters.create" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créer une fiche"
+          }
+        }
+      }
+    },
+    "characters.empty.description" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créez une fiche puis ajoutez plusieurs portraits ou vues du personnage."
+          }
+        }
+      }
+    },
+    "characters.empty.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucune fiche personnage"
+          }
+        }
+      }
+    },
+    "characters.field.description" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Description"
+          }
+        }
+      }
+    },
+    "characters.field.name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nom"
+          }
+        }
+      }
+    },
+    "characters.field.preserve" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Éléments à préserver"
+          }
+        }
+      }
+    },
+    "characters.new" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nouveau personnage"
+          }
+        }
+      }
+    },
+    "characters.references" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "références"
+          }
+        }
+      }
+    },
+    "characters.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Conservez des identités et des détails visuels cohérents entre plusieurs créations."
+          }
+        }
+      }
+    },
+    "characters.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Personnages"
+          }
+        }
+      }
+    },
+    "common.cancel" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "common.delete_confirmation" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cette image sera définitivement supprimée du disque. Cette action est irréversible."
+          }
+        }
+      }
+    },
+    "common.delete_permanently" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Supprimer définitivement"
+          }
+        }
+      }
+    },
+    "common.operation_failed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "L’opération a échoué"
+          }
+        }
+      }
+    },
+    "common.save" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enregistrer"
+          }
+        }
+      }
+    },
+    "engine.diffusers.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Poids officiels complets · environ 33,1 Go"
+          }
+        }
+      }
+    },
+    "engine.diffusers.name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Qwen-Image 2.1 · Complet"
+          }
+        }
+      }
+    },
+    "engine.gguf_q6.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Version quantifiée plus compacte · environ 12,3 Go"
+          }
+        }
+      }
+    },
+    "engine.gguf_q6.name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Qwen-Image 2.1 · GGUF Q6"
+          }
+        }
+      }
+    },
+    "engine.heretic.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèle complet avec encodeur Heretic · environ 17,5 Go supplémentaires"
+          }
+        }
+      }
+    },
+    "engine.heretic.name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Qwen-Image 2.1 · Heretic"
+          }
+        }
+      }
+    },
+    "error.engine_not_installed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le runtime du modèle sélectionné est absent ou endommagé."
+          }
+        }
+      }
+    },
+    "error.model_not_installed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Les poids Qwen-Image 2.1 sont absents."
+          }
+        }
+      }
+    },
+    "error.prompt_enhancer_not_installed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installez Qwen Prompt Enhancers dans Modèles pour améliorer le prompt."
+          }
+        }
+      }
+    },
+    "error.storage_unavailable" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le support de stockage sélectionné n’est pas disponible."
+          }
+        }
+      }
+    },
+    "error.unsupported_configuration" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cette configuration n’est pas encore prise en charge."
+          }
+        }
+      }
+    },
+    "evaluation.issue.anatomy" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Action ou anatomie"
+          }
+        }
+      }
+    },
+    "evaluation.issue.composition" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cadrage ou composition"
+          }
+        }
+      }
+    },
+    "evaluation.issue.identity" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Identité du sujet"
+          }
+        }
+      }
+    },
+    "evaluation.issue.other" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Autre défaut"
+          }
+        }
+      }
+    },
+    "evaluation.issue.preservation" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Éléments à préserver"
+          }
+        }
+      }
+    },
+    "evaluation.issue.text" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Texte dans l’image"
+          }
+        }
+      }
+    },
+    "evaluation.issue.transparency" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Transparence ou contours"
+          }
+        }
+      }
+    },
+    "evaluation.verdict.accepted" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Conforme"
+          }
+        }
+      }
+    },
+    "evaluation.verdict.correct" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "À corriger"
+          }
+        }
+      }
+    },
+    "evaluation.verdict.review" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "À examiner"
+          }
+        }
+      }
+    },
+    "installer.error.checksum" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La vérification SHA-256 a échoué pour %@."
+          }
+        }
+      }
+    },
+    "installer.error.http_status" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le téléchargement a échoué (HTTP %lld)."
+          }
+        }
+      }
+    },
+    "installer.error.invalid_response" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le serveur a renvoyé une réponse invalide."
+          }
+        }
+      }
+    },
+    "installer.error.path" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le dépôt contient un chemin non autorisé : %@"
+          }
+        }
+      }
+    },
+    "installer.error.repository" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Impossible de lire le dépôt %@."
+          }
+        }
+      }
+    },
+    "installer.error.size" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La taille du fichier %@ ne correspond pas au dépôt."
+          }
+        }
+      }
+    },
+    "installer.error.space" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Espace insuffisant : %1$@ requis, %2$@ disponibles."
+          }
+        }
+      }
+    },
+    "library.create" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créer une image"
+          }
+        }
+      }
+    },
+    "library.empty.description" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Les images générées et les tâches en cours apparaîtront ici."
+          }
+        }
+      }
+    },
+    "library.empty.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucune création"
+          }
+        }
+      }
+    },
+    "library.export_failed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "L’exportation a échoué"
+          }
+        }
+      }
+    },
+    "library.open_folder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ouvrir le dossier"
+          }
+        }
+      }
+    },
+    "library.refresh" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Actualiser"
+          }
+        }
+      }
+    },
+    "library.reveal" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Afficher dans le Finder"
+          }
+        }
+      }
+    },
+    "library.save_as" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enregistrer sous…"
+          }
+        }
+      }
+    },
+    "library.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créations"
+          }
+        }
+      }
+    },
+    "logs.copy" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copier"
+          }
+        }
+      }
+    },
+    "logs.empty" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucun événement enregistré."
+          }
+        }
+      }
+    },
+    "logs.export" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Exporter…"
+          }
+        }
+      }
+    },
+    "logs.menu.item" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Logs…"
+          }
+        }
+      }
+    },
+    "logs.menu.tools" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Outils"
+          }
+        }
+      }
+    },
+    "logs.refresh" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Actualiser"
+          }
+        }
+      }
+    },
+    "logs.show" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Afficher les logs"
+          }
+        }
+      }
+    },
+    "logs.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installation du runtime, chargement des modèles et génération locale."
+          }
+        }
+      }
+    },
+    "logs.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Logs NanoApple"
+          }
+        }
+      }
+    },
+    "mask.active" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Les zones peintes seront régénérées."
+          }
+        }
+      }
+    },
+    "mask.apply" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Utiliser ce masque"
+          }
+        }
+      }
+    },
+    "mask.brush" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Taille du pinceau"
+          }
+        }
+      }
+    },
+    "mask.clear" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Effacer"
+          }
+        }
+      }
+    },
+    "mask.create" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer un masque"
+          }
+        }
+      }
+    },
+    "mask.edit" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le masque"
+          }
+        }
+      }
+    },
+    "mask.erase" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gomme"
+          }
+        }
+      }
+    },
+    "mask.error" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le masque n’a pas pu être créé"
+          }
+        }
+      }
+    },
+    "mask.hint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Peignez en rouge la zone à remplacer."
+          }
+        }
+      }
+    },
+    "mask.remove" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Retirer le masque"
+          }
+        }
+      }
+    },
+    "mask.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Éditeur de masque"
+          }
+        }
+      }
+    },
+    "mask.undo" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "mode.character_sheet" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Fiche personnage"
+          }
+        }
+      }
+    },
+    "mode.create" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créer"
+          }
+        }
+      }
+    },
+    "mode.edit" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modifier"
+          }
+        }
+      }
+    },
+    "mode.transparent" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PNG transparent"
+          }
+        }
+      }
+    },
+    "model.enhancer.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Réécriture locale pour la création et la modification d’images"
+          }
+        }
+      }
+    },
+    "model.qwen.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Création, édition, références multiples et transparence"
+          }
+        }
+      }
+    },
+    "model.qwen.gguf_q6.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèle quantifié compact avec encodeur Qwen3-VL Q4 et références visuelles"
+          }
+        }
+      }
+    },
+    "model.qwen.heretic.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Encodeur de texte alternatif pour le modèle complet · environ 17,5 Go"
+          }
+        }
+      }
+    },
+    "model.viggle.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Adaptateur facultatif pour générer en 6 étapes avec le modèle complet · environ 680 Mo"
+          }
+        }
+      }
+    },
+    "models.cancel" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Suspendre"
+          }
+        }
+      }
+    },
+    "models.choose_storage_first" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisissez d’abord un dossier de modèles."
+          }
+        }
+      }
+    },
+    "models.downloading" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Téléchargement"
+          }
+        }
+      }
+    },
+    "models.failed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Échec de l’installation"
+          }
+        }
+      }
+    },
+    "models.install" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installer"
+          }
+        }
+      }
+    },
+    "models.install_all" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installer Qwen et les enhancers"
+          }
+        }
+      }
+    },
+    "models.install_all.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Environ 70,8 Go · sources officielles Qwen sur Hugging Face"
+          }
+        }
+      }
+    },
+    "models.package.not_installed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Non installé"
+          }
+        }
+      }
+    },
+    "models.package.optional" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Optionnel"
+          }
+        }
+      }
+    },
+    "models.package.ready" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prêt"
+          }
+        }
+      }
+    },
+    "models.package.required" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Requis"
+          }
+        }
+      }
+    },
+    "models.paused" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Suspendu · la reprise est conservée"
+          }
+        }
+      }
+    },
+    "models.preparing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Préparation…"
+          }
+        }
+      }
+    },
+    "models.repair" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vérifier et mettre à jour"
+          }
+        }
+      }
+    },
+    "models.resume" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Reprendre"
+          }
+        }
+      }
+    },
+    "models.sequential_note" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Les composants sont téléchargés et utilisés séquentiellement pour limiter la mémoire requise."
+          }
+        }
+      }
+    },
+    "models.source" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Source officielle"
+          }
+        }
+      }
+    },
+    "models.storage.available" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "disponibles"
+          }
+        }
+      }
+    },
+    "models.storage.choose" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisir…"
+          }
+        }
+      }
+    },
+    "models.storage.none" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucun dossier sélectionné"
+          }
+        }
+      }
+    },
+    "models.storage.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Un SSD NVMe APFS avec au moins 90 Go libres est recommandé."
+          }
+        }
+      }
+    },
+    "models.storage.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bibliothèque de modèles"
+          }
+        }
+      }
+    },
+    "models.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Les poids sont téléchargés séparément et peuvent rester sur un SSD externe."
+          }
+        }
+      }
+    },
+    "models.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèles et stockage"
+          }
+        }
+      }
+    },
+    "models.verifying" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vérification SHA-256…"
+          }
+        }
+      }
+    },
+    "navigation.characters" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Personnages"
+          }
+        }
+      }
+    },
+    "navigation.create" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créer"
+          }
+        }
+      }
+    },
+    "navigation.library" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créations"
+          }
+        }
+      }
+    },
+    "navigation.models" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèles"
+          }
+        }
+      }
+    },
+    "navigation.prompts" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prompts"
+          }
+        }
+      }
+    },
+    "navigation.section.configuration" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Configuration"
+          }
+        }
+      }
+    },
+    "navigation.section.creation" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Création"
+          }
+        }
+      }
+    },
+    "navigation.settings" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Réglages"
+          }
+        }
+      }
+    },
+    "OK" : {
+
+    },
+    "preset.anime" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Anime"
+          }
+        }
+      }
+    },
+    "preset.anime.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Personnage vertical, dessin anime détaillé."
+          }
+        }
+      }
+    },
+    "preset.balanced" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Équilibré"
+          }
+        }
+      }
+    },
+    "preset.balanced.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bon compromis entre vitesse et détail."
+          }
+        }
+      }
+    },
+    "preset.cinematic" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cinématique"
+          }
+        }
+      }
+    },
+    "preset.cinematic.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cadre ultralarge, lumière de film et profondeur."
+          }
+        }
+      }
+    },
+    "preset.fast" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Brouillon rapide"
+          }
+        }
+      }
+    },
+    "preset.fast.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Itération rapide avec moins d’étapes."
+          }
+        }
+      }
+    },
+    "preset.illustration" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Illustration"
+          }
+        }
+      }
+    },
+    "preset.illustration.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Illustration numérique riche et nette."
+          }
+        }
+      }
+    },
+    "preset.photorealistic" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Photoréaliste"
+          }
+        }
+      }
+    },
+    "preset.photorealistic.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Texture naturelle, optique et lumière réalistes."
+          }
+        }
+      }
+    },
+    "preset.portrait" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Portrait"
+          }
+        }
+      }
+    },
+    "preset.portrait.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cadrage vertical pour une personne."
+          }
+        }
+      }
+    },
+    "preset.product" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Photo produit"
+          }
+        }
+      }
+    },
+    "preset.product.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Objet isolé et éclairage de studio commercial."
+          }
+        }
+      }
+    },
+    "preset.quality" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Haute qualité"
+          }
+        }
+      }
+    },
+    "preset.quality.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Carré 2K et davantage d’étapes."
+          }
+        }
+      }
+    },
+    "preset.social" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Réseaux sociaux"
+          }
+        }
+      }
+    },
+    "preset.social.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Format 4:5 optimisé pour les publications sociales."
+          }
+        }
+      }
+    },
+    "preset.storyboard" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Storyboard"
+          }
+        }
+      }
+    },
+    "preset.storyboard.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Composition horizontale lisible et narrative."
+          }
+        }
+      }
+    },
+    "project.default_name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Projet %@"
+          }
+        }
+      }
+    },
+    "project.error.not_found" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le projet actif est introuvable."
+          }
+        }
+      }
+    },
+    "project.error.unavailable" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le dossier des projets est indisponible."
+          }
+        }
+      }
+    },
+    "project.error.unmanaged_file" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NanoApple refuse de supprimer un fichier situé hors du projet actif."
+          }
+        }
+      }
+    },
+    "project.legacy" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Anciennes créations"
+          }
+        }
+      }
+    },
+    "project.new" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nouveau projet"
+          }
+        }
+      }
+    },
+    "project.open" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvrir dans le studio"
+          }
+        }
+      }
+    },
+    "project.rename" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Renommer le projet"
+          }
+        }
+      }
+    },
+    "project.title" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Projet"
+          }
+        }
+      }
+    },
+    "project.variant.generation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Génération"
+          }
+        }
+      }
+    },
+    "project.variant.upscale2x" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrandissement 2×"
+          }
+        }
+      }
+    },
+    "project.variant.upscale4x" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrandissement 4×"
+          }
+        }
+      }
+    },
+    "project.variant.variation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Variante"
+          }
+        }
+      }
+    },
+    "project.variants" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "variantes"
+          }
+        }
+      }
+    },
+    "prompt.error.empty" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Saisissez au moins un prompt avant de le sauvegarder."
+          }
+        }
+      }
+    },
+    "resolution.custom" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Personnalisée…"
+          }
+        }
+      }
+    },
+    "runtime.cancel" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Annuler"
+          }
+        }
+      }
+    },
+    "runtime.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Python arm64, PyTorch Metal et Diffusers pour exécuter Qwen localement."
+          }
+        }
+      }
+    },
+    "runtime.error.tools" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le runtime Python ou l’exécutable uv embarqué est introuvable."
+          }
+        }
+      }
+    },
+    "runtime.install" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installer le runtime"
+          }
+        }
+      }
+    },
+    "runtime.install.check" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vérification du GPU Apple…"
+          }
+        }
+      }
+    },
+    "runtime.install.packages" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installation de PyTorch Metal et Diffusers…"
+          }
+        }
+      }
+    },
+    "runtime.missing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Runtime non installé"
+          }
+        }
+      }
+    },
+    "runtime.ready" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Runtime prêt"
+          }
+        }
+      }
+    },
+    "runtime.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Runtime de génération"
+          }
+        }
+      }
+    },
+    "settings.appearance" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apparence"
+          }
+        }
+      }
+    },
+    "settings.appearance.choice" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mode"
+          }
+        }
+      }
+    },
+    "settings.appearance.dark" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sombre"
+          }
+        }
+      }
+    },
+    "settings.appearance.light" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Clair"
+          }
+        }
+      }
+    },
+    "settings.appearance.system" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Système"
+          }
+        }
+      }
+    },
+    "settings.choose_output" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisir le dossier…"
+          }
+        }
+      }
+    },
+    "settings.engine" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèle local"
+          }
+        }
+      }
+    },
+    "settings.engine.choice" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèle de génération"
+          }
+        }
+      }
+    },
+    "settings.engine.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Apple Silicon · traitement local"
+          }
+        }
+      }
+    },
+    "settings.engine.name" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Qwen-Image 2.1"
+          }
+        }
+      }
+    },
+    "settings.folder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dossier"
+          }
+        }
+      }
+    },
+    "settings.language" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Langue"
+          }
+        }
+      }
+    },
+    "settings.language.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "NanoApple utilise automatiquement la langue choisie dans macOS."
+          }
+        }
+      }
+    },
+    "settings.not_selected" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Non choisi"
+          }
+        }
+      }
+    },
+    "settings.output" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Dossier des créations"
+          }
+        }
+      }
+    },
+    "settings.privacy" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Confidentialité"
+          }
+        }
+      }
+    },
+    "settings.privacy.detail" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Les prompts, références et créations restent sur ce Mac."
+          }
+        }
+      }
+    },
+    "storage.choose" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisir"
+          }
+        }
+      }
+    },
+    "storage.choose_models" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisir le dossier des modèles"
+          }
+        }
+      }
+    },
+    "storage.choose_outputs" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Choisir le dossier des créations"
+          }
+        }
+      }
+    },
+    "storage.error.default_output" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le dossier Images de l’utilisateur est introuvable."
+          }
+        }
+      }
+    },
+    "storage.error.outputs_migration" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La migration des créations vers le dossier Images/NanoApple a échoué : %@"
+          }
+        }
+      }
+    },
+    "studio.advanced" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Réglages avancés"
+          }
+        }
+      }
+    },
+    "studio.configure_model" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Configurer le modèle"
+          }
+        }
+      }
+    },
+    "studio.engine" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Modèle"
+          }
+        }
+      }
+    },
+    "studio.generate" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Générer"
+          }
+        }
+      }
+    },
+    "studio.mode" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Mode"
+          }
+        }
+      }
+    },
+    "studio.model_required" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installez le modèle avant la première génération."
+          }
+        }
+      }
+    },
+    "studio.negative_prompt" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prompt négatif"
+          }
+        }
+      }
+    },
+    "studio.negative_prompt.placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Éléments à éviter…"
+          }
+        }
+      }
+    },
+    "studio.output" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aperçu"
+          }
+        }
+      }
+    },
+    "studio.output.cancel" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Annuler la génération"
+          }
+        }
+      }
+    },
+    "studio.output.cancelled" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Génération annulée"
+          }
+        }
+      }
+    },
+    "studio.output.empty" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Votre image apparaîtra ici"
+          }
+        }
+      }
+    },
+    "studio.output.enhancing_prompt" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Amélioration du prompt en cours…"
+          }
+        }
+      }
+    },
+    "studio.output.failed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La génération n’a pas pu démarrer"
+          }
+        }
+      }
+    },
+    "studio.output.generating" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Génération en cours"
+          }
+        }
+      }
+    },
+    "studio.output.preparing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Préparation du modèle local…"
+          }
+        }
+      }
+    },
+    "studio.output.switching_engine" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Déchargement de l’ancien modèle…"
+          }
+        }
+      }
+    },
+    "studio.preset" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Préréglage"
+          }
+        }
+      }
+    },
+    "studio.prompt" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Instruction"
+          }
+        }
+      }
+    },
+    "studio.prompt.default" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Illustration style anime japonais 2D ultra-détaillée d’une Mazda MX5 Miata en train de drifter"
+          }
+        }
+      }
+    },
+    "studio.prompt.enhance" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Améliorer le prompt"
+          }
+        }
+      }
+    },
+    "studio.prompt.enhance.diffusers_only" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Disponible avec le modèle Qwen complet."
+          }
+        }
+      }
+    },
+    "studio.prompt.enhance.install_required" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installez Qwen Prompt Enhancers dans Modèles pour utiliser cette option."
+          }
+        }
+      }
+    },
+    "studio.prompt.enhanced" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prompt amélioré"
+          }
+        }
+      }
+    },
+    "studio.prompt.guide" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Guide du prompt"
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.character" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Désignez l’image qui fixe l’identité du personnage. Décrivez séparément la nouvelle pose, la tenue et le décor ; réutilisez une référence validée pour chaque variante."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.character_reference" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajoutez une référence si l’identité doit rester la même d’une image à l’autre."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.compare" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pour comparer deux prompts, gardez le même modèle, les mêmes dimensions, étapes, seed et références."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.create" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Décrivez une image et une action précises : sujet, position, décor, cadrage et lumière. Pour une série, préparez une instruction par image."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.edit" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Indiquez d’abord ce qui change et le résultat attendu, puis ce qui doit rester identique. Évitez les consignes contradictoires."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.missing_reference" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajoutez l’image à modifier avant de lancer ce mode."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.prepared" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Instruction préparée avec le préréglage"
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.references" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Avec plusieurs références, utilisez leur numéro pour préciser le rôle de chacune : identité, tenue, objet, décor ou style."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.size" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le format est réglé séparément du texte du prompt. Vérifiez la taille réelle après génération."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.text" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Si l’image contient du texte, recopiez chaque mot exactement et précisez sa place. Séparez ce texte des consignes de réalisation."
+          }
+        }
+      }
+    },
+    "studio.prompt.guide.transparent" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Décrivez le sujet isolé et ses contours. Contrôlez ensuite le canal Alpha et les bords sur fonds clair et sombre."
+          }
+        }
+      }
+    },
+    "studio.prompt.library" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Bibliothèque de prompts"
+          }
+        }
+      }
+    },
+    "studio.prompt.library.delete" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Supprimer ce prompt"
+          }
+        }
+      }
+    },
+    "studio.prompt.library.delete_confirmation" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ce prompt sera définitivement supprimé de la bibliothèque."
+          }
+        }
+      }
+    },
+    "studio.prompt.library.empty" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucun prompt sauvegardé"
+          }
+        }
+      }
+    },
+    "studio.prompt.library.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Cliquez sur un prompt pour le réutiliser."
+          }
+        }
+      }
+    },
+    "studio.prompt.library.use" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Utiliser"
+          }
+        }
+      }
+    },
+    "studio.prompt.original" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prompt original"
+          }
+        }
+      }
+    },
+    "studio.prompt.placeholder" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Un portrait cinématographique, lumière douce, détails naturels…"
+          }
+        }
+      }
+    },
+    "studio.prompt.reset" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Réinitialiser"
+          }
+        }
+      }
+    },
+    "studio.prompt.save" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Sauvegarder les prompts"
+          }
+        }
+      }
+    },
+    "studio.prompt.saved" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Prompts sauvegardés"
+          }
+        }
+      }
+    },
+    "studio.prompt.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Décrivez précisément le sujet, le style, la lumière et la composition."
+          }
+        }
+      }
+    },
+    "studio.prompt.used" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Instruction de la variante"
+          }
+        }
+      }
+    },
+    "studio.prompt.used.copy" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Copier l’instruction de la variante"
+          }
+        }
+      }
+    },
+    "studio.references" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Images de référence"
+          }
+        }
+      }
+    },
+    "studio.references.add" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajouter des images"
+          }
+        }
+      }
+    },
+    "studio.references.empty" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "PNG, JPEG, HEIC ou WebP"
+          }
+        }
+      }
+    },
+    "studio.references.remove" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Retirer"
+          }
+        }
+      }
+    },
+    "studio.references.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Ajoutez jusqu’à dix images pour guider l’identité, le produit ou la composition."
+          }
+        }
+      }
+    },
+    "studio.resolution" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Résolution"
+          }
+        }
+      }
+    },
+    "studio.resolution.custom_hint" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "De 256 à 2048 px, par multiples de 32."
+          }
+        }
+      }
+    },
+    "studio.resolution.height" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Hauteur"
+          }
+        }
+      }
+    },
+    "studio.resolution.high_warning" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Le 2K utilise beaucoup plus de mémoire et peut être très lent sur un Mac de 24 Go."
+          }
+        }
+      }
+    },
+    "studio.resolution.swap" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Permuter largeur et hauteur"
+          }
+        }
+      }
+    },
+    "studio.resolution.width" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Largeur"
+          }
+        }
+      }
+    },
+    "studio.review.actual_size" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Taille obtenue"
+          }
+        }
+      }
+    },
+    "studio.review.alpha_missing" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aucun pixel transparent détecté dans le fichier."
+          }
+        }
+      }
+    },
+    "studio.review.alpha_present" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Pixels transparents détectés ; vérifiez les contours sur fonds clair et sombre."
+          }
+        }
+      }
+    },
+    "studio.review.checklist" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Vérifiez le texte exact, l’action, l’anatomie, l’identité, le cadrage et les éléments à préserver. Pour un PNG transparent, inspectez aussi les bords sur fonds clair et sombre."
+          }
+        }
+      }
+    },
+    "studio.review.defect_note" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Décrivez le défaut, le résultat voulu et ce qui doit rester intact."
+          }
+        }
+      }
+    },
+    "studio.review.defects" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Défauts observés"
+          }
+        }
+      }
+    },
+    "studio.review.preference_note" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Préférence esthétique (distincte d’un défaut)"
+          }
+        }
+      }
+    },
+    "studio.review.requested_size" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Taille demandée"
+          }
+        }
+      }
+    },
+    "studio.review.save" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Enregistrer l’évaluation"
+          }
+        }
+      }
+    },
+    "studio.review.saved" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Évaluation enregistrée"
+          }
+        }
+      }
+    },
+    "studio.review.size_mismatch" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "La taille obtenue diffère de la taille demandée."
+          }
+        }
+      }
+    },
+    "studio.review.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Évaluer cette image"
+          }
+        }
+      }
+    },
+    "studio.runtime_required" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Qwen est prêt. Le runtime de génération local doit encore être installé."
+          }
+        }
+      }
+    },
+    "studio.seed" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Seed"
+          }
+        }
+      }
+    },
+    "studio.seed.random" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Aléatoire"
+          }
+        }
+      }
+    },
+    "studio.settings" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Paramètres"
+          }
+        }
+      }
+    },
+    "studio.steps" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Étapes"
+          }
+        }
+      }
+    },
+    "studio.subtitle" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Créez ou modifiez une image avec Qwen-Image 2.1."
+          }
+        }
+      }
+    },
+    "studio.title" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Nouvelle création"
+          }
+        }
+      }
+    },
+    "studio.upscale2x" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrandir 2×"
+          }
+        }
+      }
+    },
+    "studio.upscale4x" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Agrandir 4×"
+          }
+        }
+      }
+    },
+    "studio.variation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Créer une variante"
+          }
+        }
+      }
+    },
+    "studio.viggle_turbo" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Viggle Turbo"
+          }
+        }
+      }
+    },
+    "studio.viggle_turbo.help" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Crée des images plus vite avec 6 étapes fixes. Le résultat peut être moins précis pour les retouches complexes ou les petits textes. Fonctionne avec le modèle Qwen complet, sans prompt négatif, et accepte jusqu’à 3 images de référence."
+          }
+        }
+      }
+    },
+    "studio.viggle_turbo.install_required" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Installez l’adaptateur Viggle Turbo dans Modèles pour utiliser cette option."
+          }
+        }
+      }
+    },
+    "studio.viggle_turbo.max_references" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "Viggle Turbo accepte au plus 3 images de référence."
+          }
+        }
+      }
+    },
+    "upscale.error.encoding" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "L’image agrandie n’a pas pu être enregistrée."
+          }
+        }
+      }
+    },
+    "upscale.error.too_large" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "L’image agrandie dépasserait 8192 pixels."
+          }
+        }
+      }
+    },
+    "upscale.error.unreadable" : {
+      "extractionState" : "extracted_with_value",
+      "localizations" : {
+        "fr" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "L’image source ne peut pas être lue."
+          }
+        }
+      }
+    }
+  },
+  "version" : "1.0"
+}
