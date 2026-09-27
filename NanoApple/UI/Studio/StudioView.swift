@@ -38,6 +38,8 @@ struct StudioView: View {
     @State private var referenceToDelete: URL?
     @State private var loadedProjectID: UUID?
     @State private var promptsWereSaved = false
+    @State private var variantPromptWasSaved = false
+    @State private var keepStartupPreviewEmpty = false
     @State private var showPromptGuide = false
     @State private var evaluation = ImageEvaluation()
     @State private var previewHasTransparentPixels: Bool?
@@ -91,16 +93,16 @@ struct StudioView: View {
         .onAppear {
             refreshModelAvailability()
             projectStore.configure(rootURL: storage.generationOutputURL)
-            let shouldRestorePrompts = appModel.didInitializeStudioPrompts
+            keepStartupPreviewEmpty = !appModel.didInitializeStudioPrompts
             appModel.didInitializeStudioPrompts = true
             loadedProjectID = projectStore.activeProjectID
-            loadActiveProject(restorePrompts: shouldRestorePrompts)
+            loadActiveProject(restorePrompts: !keepStartupPreviewEmpty)
             openRequestedPrompt()
         }
         .onChange(of: projectStore.activeProjectID) { _, newValue in
             guard newValue != loadedProjectID else { return }
             loadedProjectID = newValue
-            loadActiveProject()
+            loadActiveProject(restorePrompts: !keepStartupPreviewEmpty)
         }
         .onChange(of: prompt) { _, _ in promptsWereSaved = false }
         .onChange(of: negativePrompt) { _, _ in promptsWereSaved = false }
@@ -383,6 +385,14 @@ struct StudioView: View {
                     SectionHeading(displayedPromptResult?.title ?? L10n.Studio.enhancedPrompt)
                     Spacer()
                     if let result = displayedPromptResult {
+                        Button(
+                            variantPromptWasSaved ? L10n.Studio.variantPromptSaved : L10n.Studio.saveVariantPrompt,
+                            systemImage: variantPromptWasSaved ? "checkmark.circle.fill" : "square.and.arrow.down"
+                        ) {
+                            saveVariantPrompt(result.value)
+                        }
+                        .buttonStyle(.bordered)
+
                         Button {
                             NSPasteboard.general.clearContents()
                             NSPasteboard.general.setString(result.value, forType: .string)
@@ -875,6 +885,19 @@ struct StudioView: View {
         }
     }
 
+    private func saveVariantPrompt(_ value: String) {
+        do {
+            try projectStore.savePrompt(
+                prompt: value,
+                negativePrompt: displayedPromptRequest?.negativePrompt ?? ""
+            )
+            variantPromptWasSaved = true
+        } catch {
+            variantPromptWasSaved = false
+            exportError = error.localizedDescription
+        }
+    }
+
     private func openRequestedPrompt() {
         guard let id = appModel.promptToOpenID else { return }
         if let savedPrompt = projectStore.savedPrompts.first(where: { $0.id == id }) {
@@ -949,6 +972,8 @@ struct StudioView: View {
             previewOverrideURL = nil
             previewRequest = request
             currentVariantID = nil
+            keepStartupPreviewEmpty = false
+            variantPromptWasSaved = false
             evaluation = ImageEvaluation()
             previewHasTransparentPixels = nil
             generation.generate(
@@ -1041,6 +1066,7 @@ struct StudioView: View {
             evaluation = ImageEvaluation()
             previewHasTransparentPixels = nil
         }
+        variantPromptWasSaved = false
         mode = request.mode
         preset = request.preset
         prompt = restorePrompts ? (request.originalPrompt ?? request.prompt) : L10n.Studio.defaultPrompt
@@ -1065,6 +1091,7 @@ struct StudioView: View {
         currentVariantID = nil
         evaluation = ImageEvaluation()
         previewHasTransparentPixels = nil
+        variantPromptWasSaved = false
         maskURL = nil
         referenceURLs = []
         prompt = L10n.Studio.defaultPrompt
@@ -1156,7 +1183,10 @@ struct StudioView: View {
                 }
                 return activeProjectID
             },
-            set: { projectStore.activeProjectID = $0 }
+            set: {
+                keepStartupPreviewEmpty = false
+                projectStore.activeProjectID = $0
+            }
         )
     }
 

@@ -37,6 +37,8 @@ enum L10n {
         static let enhancedPromptPlaceholder = String(localized: "studio.prompt.enhanced.placeholder", defaultValue: "Le prompt amélioré apparaîtra ici après le lancement de la génération.")
         static let copyEnhancedPrompt = String(localized: "studio.prompt.enhanced.copy", defaultValue: "Copier le prompt amélioré")
         static let copyFinalPrompt = String(localized: "studio.prompt.used.copy", defaultValue: "Copier l’instruction de la variante")
+        static let saveVariantPrompt = String(localized: "studio.prompt.used.save", defaultValue: "Ajouter à la bibliothèque")
+        static let variantPromptSaved = String(localized: "studio.prompt.used.saved", defaultValue: "Enregistré")
         static let resetPrompts = String(localized: "studio.prompt.reset", defaultValue: "Réinitialiser")
         static let savePrompts = String(localized: "studio.prompt.save", defaultValue: "Sauvegarder les prompts")
         static let promptsSaved = String(localized: "studio.prompt.saved", defaultValue: "Prompts sauvegardés")
