@@ -1,8 +1,16 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 import SwiftUI
 
 @MainActor
 final class AppModel: ObservableObject {
+    struct PromptHistorySelection: Equatable {
+        let id: UUID
+        let useOriginal: Bool
+    }
+
     enum Appearance: String, CaseIterable, Identifiable {
         case system
         case light
@@ -62,11 +70,16 @@ final class AppModel: ObservableObject {
 
     @Published var selection: Destination? = .studio
     @Published var promptToOpenID: UUID?
+    @Published var promptHistoryToOpen: PromptHistorySelection?
+    @Published var isShowingSetup = false
     @Published var generationBackend: GenerationBackend {
         didSet { UserDefaults.standard.set(generationBackend.rawValue, forKey: generationBackendKey) }
     }
     @Published var appearance: Appearance {
         didSet { UserDefaults.standard.set(appearance.rawValue, forKey: appearanceKey) }
+    }
+    @Published var nsfwFilterEnabled: Bool {
+        didSet { UserDefaults.standard.set(nsfwFilterEnabled, forKey: nsfwFilterKey) }
     }
     @Published private(set) var characters: [CharacterProfile] = []
     @Published private(set) var creations: [CreationRecord] = []
@@ -75,14 +88,17 @@ final class AppModel: ObservableObject {
     private let charactersKey = "NanoApple.characters.v1"
     private let generationBackendKey = "NanoApple.generationBackend.v1"
     private let appearanceKey = "NanoApple.appearance.v1"
+    private let nsfwFilterKey = "NanoApple.nsfwFilter.enabled.v1"
+    private let setupSeenKey = "NanoApple.setup.seen.v1"
 
     init() {
-        generationBackend = GenerationBackend(
-            rawValue: UserDefaults.standard.string(forKey: generationBackendKey) ?? ""
-        ) ?? .diffusers
+        generationBackend = GenerationBackend.restored(
+            from: UserDefaults.standard.string(forKey: generationBackendKey) ?? ""
+        ) ?? ModelAdvice.preferredTurbo()
         appearance = Appearance(
             rawValue: UserDefaults.standard.string(forKey: appearanceKey) ?? ""
         ) ?? .dark
+        nsfwFilterEnabled = UserDefaults.standard.object(forKey: nsfwFilterKey) as? Bool ?? true
         if let data = UserDefaults.standard.data(forKey: charactersKey),
            let decoded = try? JSONDecoder().decode([CharacterProfile].self, from: data) {
             characters = decoded
@@ -93,6 +109,20 @@ final class AppModel: ObservableObject {
         characters.append(character)
         characters.sort { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
         persistCharacters()
+    }
+
+    func offerSetupIfNeeded(modelReady: Bool, runtimeReady: Bool, safetyReady: Bool) {
+        guard !UserDefaults.standard.bool(forKey: setupSeenKey) else { return }
+        if modelReady && runtimeReady && (!nsfwFilterEnabled || safetyReady) {
+            UserDefaults.standard.set(true, forKey: setupSeenKey)
+        } else {
+            isShowingSetup = true
+        }
+    }
+
+    func dismissSetup() {
+        UserDefaults.standard.set(true, forKey: setupSeenKey)
+        isShowingSetup = false
     }
 
     func deleteCharacters(at offsets: IndexSet) {

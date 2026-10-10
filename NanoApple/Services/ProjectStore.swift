@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import AppKit
 import Foundation
 
@@ -25,7 +28,9 @@ final class ProjectStore: ObservableObject {
 
     @Published private(set) var projects: [ImageProject] = []
     @Published private(set) var savedPrompts: [SavedPrompt] = []
+    @Published private(set) var promptHistory: [PromptHistoryEntry] = []
     @Published var variantToOpenID: UUID?
+    var variantToRegenerateID: UUID?
     @Published var activeProjectID: UUID? {
         didSet {
             UserDefaults.standard.set(activeProjectID?.uuidString, forKey: activeProjectKey)
@@ -47,6 +52,7 @@ final class ProjectStore: ObservableObject {
         self.rootURL = rootURL
         reload()
         reloadPromptLibrary()
+        reloadPromptHistory()
     }
 
     @discardableResult
@@ -90,7 +96,8 @@ final class ProjectStore: ObservableObject {
         outputURL: URL,
         request: GenerationRequest,
         kind: ProjectVariant.Kind,
-        parentID: UUID?
+        parentID: UUID?,
+        contentSafety: ContentSafetyAssessment? = nil
     ) throws -> ProjectVariant {
         let active = try ensureActiveProject()
         guard let index = projects.firstIndex(where: { $0.id == active.id }) else {
@@ -116,7 +123,8 @@ final class ProjectStore: ObservableObject {
             relativeImagePath: destination.lastPathComponent,
             request: archivedRequest,
             sourcePixelWidth: size?.width,
-            sourcePixelHeight: size?.height
+            sourcePixelHeight: size?.height,
+            contentSafety: contentSafety
         )
         projects[index].variants.append(variant)
         projects[index].draft = archivedRequest
@@ -140,6 +148,17 @@ final class ProjectStore: ObservableObject {
         try persist(updated)
         projects[projectIndex] = updated
         sortProjects()
+    }
+
+    func saveContentSafety(_ assessment: ContentSafetyAssessment, for variantID: UUID, in projectID: UUID) throws {
+        guard let projectIndex = projects.firstIndex(where: { $0.id == projectID }),
+              let variantIndex = projects[projectIndex].variants.firstIndex(where: { $0.id == variantID }) else {
+            throw StoreError.projectNotFound
+        }
+        var updated = projects[projectIndex]
+        updated.variants[variantIndex].contentSafety = assessment
+        try persist(updated)
+        projects[projectIndex] = updated
     }
 
     @discardableResult
@@ -184,6 +203,27 @@ final class ProjectStore: ObservableObject {
         let updated = savedPrompts.filter { $0.id != id }
         try persistPromptLibrary(updated)
         savedPrompts = updated
+    }
+
+    func recordPromptHistory(request: GenerationRequest, createdAt: Date, projectName: String) throws {
+        guard !promptHistory.contains(where: { $0.id == request.id }) else { return }
+        var updated = promptHistory
+        updated.insert(PromptHistoryEntry(request: request, createdAt: createdAt, projectName: projectName), at: 0)
+        try persistPromptHistory(updated)
+        promptHistory = updated
+    }
+
+    func deletePromptHistoryEntry(id: UUID) throws {
+        guard promptHistory.contains(where: { $0.id == id }) else { return }
+        let updated = promptHistory.filter { $0.id != id }
+        try persistPromptHistory(updated)
+        promptHistory = updated
+    }
+
+    func clearPromptHistory() throws {
+        guard !promptHistory.isEmpty else { return }
+        try persistPromptHistory([])
+        promptHistory = []
     }
 
     func permanentlyDeleteReference(_ url: URL) throws {
@@ -302,6 +342,37 @@ final class ProjectStore: ObservableObject {
             .sorted { $0.savedAt > $1.savedAt }
     }
 
+    private func reloadPromptHistory() {
+        guard let promptHistoryURL else {
+            promptHistory = []
+            return
+        }
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        if let data = try? Data(contentsOf: promptHistoryURL) {
+            promptHistory = ((try? decoder.decode([PromptHistoryEntry].self, from: data)) ?? [])
+                .sorted { $0.createdAt > $1.createdAt }
+            return
+        }
+        guard !FileManager.default.fileExists(atPath: promptHistoryURL.path) else {
+            promptHistory = []
+            return
+        }
+        let entries = projects.flatMap { project in
+            project.variants.compactMap { variant -> PromptHistoryEntry? in
+                guard variant.kind == .generation || variant.kind == .variation else { return nil }
+                return PromptHistoryEntry(
+                    request: variant.request,
+                    createdAt: variant.createdAt,
+                    projectName: project.name
+                )
+            }
+        }
+        .sorted { $0.createdAt > $1.createdAt }
+        promptHistory = entries
+        try? persistPromptHistory(entries)
+    }
+
     private var projectsRootURL: URL? {
         rootURL?.appending(path: "Projects", directoryHint: .isDirectory)
     }
@@ -312,6 +383,10 @@ final class ProjectStore: ObservableObject {
 
     private var promptLibraryURL: URL? {
         promptsDirectoryURL?.appending(path: "library.json")
+    }
+
+    private var promptHistoryURL: URL? {
+        promptsDirectoryURL?.appending(path: "history.json")
     }
 
     private func projectDirectory(for id: UUID) -> URL {
@@ -461,6 +536,17 @@ final class ProjectStore: ObservableObject {
         encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
         encoder.dateEncodingStrategy = .iso8601
         try encoder.encode(prompts).write(to: promptLibraryURL, options: .atomic)
+    }
+
+    private func persistPromptHistory(_ entries: [PromptHistoryEntry]) throws {
+        guard let promptsDirectoryURL, let promptHistoryURL else {
+            throw StoreError.unavailable
+        }
+        try FileManager.default.createDirectory(at: promptsDirectoryURL, withIntermediateDirectories: true)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        encoder.dateEncodingStrategy = .iso8601
+        try encoder.encode(entries).write(to: promptHistoryURL, options: .atomic)
     }
 
     private func uniqueImageName(for source: URL) -> String {

@@ -1,34 +1,93 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import AppKit
 import ImageIO
 import SwiftUI
 import UniformTypeIdentifiers
 
 struct StudioView: View {
+    private enum SimpleImageFormat: CaseIterable, Identifiable {
+        case square, landscape, portrait, socialPortrait, ultrawide
+
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .square: "1:1"
+            case .landscape: "16:9"
+            case .portrait: "9:16"
+            case .socialPortrait: "4:5"
+            case .ultrawide: "16:7"
+            }
+        }
+
+        var aspectRatio: Double {
+            switch self {
+            case .square: 1
+            case .landscape: 16.0 / 9
+            case .portrait: 9.0 / 16
+            case .socialPortrait: 4.0 / 5
+            case .ultrawide: 16.0 / 7
+            }
+        }
+    }
+
+    private enum SimpleImageSize: CaseIterable, Identifiable {
+        case standard, large
+
+        var id: Self { self }
+
+        var title: String {
+            switch self {
+            case .standard: L10n.Studio.standardSize
+            case .large: L10n.Studio.largeSize
+            }
+        }
+    }
+
+    private struct PromptPreviewSource: Equatable {
+        let prompt: String
+        let mode: GenerationMode
+        let preset: GenerationPreset
+        let references: [URL]
+        let backend: GenerationBackend
+    }
+
     @EnvironmentObject private var appModel: AppModel
     @EnvironmentObject private var storage: SecurityScopedStorage
     @EnvironmentObject private var modelLibrary: ModelLibrary
     @EnvironmentObject private var generation: GenerationCoordinator
     @EnvironmentObject private var projectStore: ProjectStore
 
+    @AppStorage("NanoApple.studio.expertMode.v1") private var isExpertMode = false
     @State private var mode: GenerationMode = .create
-    @State private var preset: GenerationPreset = .balanced
+    @State private var preset: GenerationPreset = .none
     @State private var prompt = L10n.Studio.defaultPrompt
     @State private var negativePrompt = ""
     @State private var referenceURLs: [URL] = []
     @State private var resolution: CanvasResolution = .square
+    @State private var simpleImageFormat: SimpleImageFormat = .square
+    @State private var simpleImageSize: SimpleImageSize = .standard
     @State private var customWidth = 1_024
     @State private var customHeight = 1_024
     @State private var steps = 30.0
     @State private var seed = 42
     @State private var randomizeSeed = true
-    @State private var enhancePrompt = true
+    @State private var enhancePrompt = false
     @State private var useViggleTurbo = false
+    @State private var useConsistencyLoRA = false
+    @State private var orbitSettings = ViewpointOrbitSettings()
     @State private var showViggleHelp = false
+    @State private var showConsistencyHelp = false
     @State private var showAdvanced = false
     @State private var exportError: String?
     @State private var maskURL: URL?
     @State private var showMaskEditor = false
     @State private var previewOverrideURL: URL?
+    @State private var revealedSafetyPreviewURL: URL?
+    @State private var isRetryingSafety = false
+    @State private var retriedSafetyVariantIDs: Set<UUID> = []
     @State private var previewRequest: GenerationRequest?
     @State private var currentVariantID: UUID?
     @State private var pendingVariantKind: ProjectVariant.Kind = .generation
@@ -43,31 +102,48 @@ struct StudioView: View {
     @State private var showPromptGuide = false
     @State private var evaluation = ImageEvaluation()
     @State private var previewHasTransparentPixels: Bool?
+    @FocusState private var promptEditorFocused: Bool
+    @State private var preparedPrompt = ""
+    @State private var preparedPromptSource: PromptPreviewSource?
+    @State private var usePreparedPrompt = true
+    @State private var isPreparingPrompt = false
+    @State private var promptPreparationTask: Task<Void, Never>?
+    @State private var promptPreparationID: UUID?
+    @State private var finalParentVariantID: UUID?
 
     private static let upscaler = ImageUpscaler()
+    private static let safetyClassifier = NSFWClassifier()
 
-    var body: some View {
+    private var studioContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
                 header
 
-                HStack(alignment: .top, spacing: 20) {
-                    VStack(spacing: 18) {
-                        modeCard
-                        if mode.acceptsReferences { referencesCard }
-                        promptCard
-                        if enhancePrompt || displayedPromptResult != nil {
-                            promptResultCard
+                if isExpertMode {
+                    HStack(alignment: .top, spacing: 20) {
+                        VStack(spacing: 18) {
+                            modeCard
+                            if mode.acceptsReferences { referencesCard }
+                            if mode == .viewpointOrbit {
+                                orbitCard
+                            } else {
+                                promptCard
+                                if enhancePrompt || displayedPromptResult != nil {
+                                    promptResultCard
+                                }
+                                presetCard
+                            }
                         }
-                        presetCard
-                    }
-                    .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity)
 
-                    VStack(spacing: 18) {
-                        previewCard
-                        settingsCard
+                        VStack(spacing: 18) {
+                            previewCard
+                            settingsCard
+                        }
+                        .frame(width: 330)
                     }
-                    .frame(width: 330)
+                } else {
+                    simpleStudio
                 }
             }
             .padding(28)
@@ -75,41 +151,77 @@ struct StudioView: View {
             .frame(maxWidth: .infinity)
         }
         .background {
-            LinearGradient(
-                colors: [Color.accentColor.opacity(0.10), .clear, .purple.opacity(0.05)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            if isExpertMode {
+                LinearGradient(
+                    colors: [Color.accentColor.opacity(0.10), .clear, .purple.opacity(0.05)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+            } else {
+                Color(nsColor: .windowBackgroundColor)
+                    .ignoresSafeArea()
+            }
         }
-        .onChange(of: preset) { _, value in
-            resolution = value.resolution
-            steps = Double(value.steps)
-        }
-        .onChange(of: appModel.generationBackend) { _, backend in
-            if backend == .ggufQ6 { enhancePrompt = false }
+    }
+
+    var body: some View {
+        studioContent
+        .onChange(of: appModel.generationBackend) { _, _ in
             refreshModelAvailability()
         }
         .onAppear {
             refreshModelAvailability()
             projectStore.configure(rootURL: storage.generationOutputURL)
             keepStartupPreviewEmpty = !appModel.didInitializeStudioPrompts
+                && projectStore.variantToOpenID == nil
             appModel.didInitializeStudioPrompts = true
             loadedProjectID = projectStore.activeProjectID
             loadActiveProject(restorePrompts: !keepStartupPreviewEmpty)
             openRequestedPrompt()
+            if let variantID = projectStore.variantToRegenerateID {
+                projectStore.variantToRegenerateID = nil
+                if currentVariantID == variantID && !generation.state.isRunning {
+                    let backend = previewRequest?.backend ?? appModel.generationBackend
+                    Task {
+                        await generation.switchBackend(to: backend)
+                        guard appModel.selection == .studio,
+                              currentVariantID == variantID else { return }
+                        appModel.generationBackend = backend
+                        isExpertMode = true
+                        startGeneration(kind: .variation, parentID: variantID)
+                    }
+                }
+            }
         }
         .onChange(of: projectStore.activeProjectID) { _, newValue in
             guard newValue != loadedProjectID else { return }
+            finalParentVariantID = nil
             loadedProjectID = newValue
             loadActiveProject(restorePrompts: !keepStartupPreviewEmpty)
         }
         .onChange(of: prompt) { _, _ in promptsWereSaved = false }
+        .onChange(of: preparedPrompt) { _, _ in variantPromptWasSaved = false }
+        .onChange(of: promptPreviewSource) { _, _ in
+            promptPreparationTask?.cancel()
+            promptPreparationID = nil
+            isPreparingPrompt = false
+        }
         .onChange(of: negativePrompt) { _, _ in promptsWereSaved = false }
         .onChange(of: useViggleTurbo) { _, _ in persistWorkspaceDraft() }
+        .onChange(of: orbitSettings) { _, _ in
+            if mode == .viewpointOrbit { persistWorkspaceDraft() }
+        }
         .onChange(of: appModel.promptToOpenID) { _, _ in openRequestedPrompt() }
+        .onChange(of: appModel.promptHistoryToOpen) { _, _ in openRequestedPrompt() }
         .onChange(of: generation.state) { _, state in
             if case .completed(let url) = state { persistCompletedGeneration(url) }
+        }
+        .onDisappear {
+            promptPreparationTask?.cancel()
+            promptPreparationID = nil
+            promptPreparationTask = nil
+            isPreparingPrompt = false
         }
         .sheet(isPresented: $showMaskEditor) {
             if let source = referenceURLs.first {
@@ -149,53 +261,246 @@ struct StudioView: View {
             VStack(alignment: .leading, spacing: 5) {
                 Text(L10n.Studio.title)
                     .font(.largeTitle.bold())
-                Text(L10n.Studio.subtitle)
-                    .foregroundStyle(.secondary)
+                if isExpertMode {
+                    Text(L10n.Studio.subtitle)
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer()
-            Picker(L10n.Project.title, selection: validProjectSelection) {
-                if projectStore.projects.isEmpty {
-                    Text(L10n.Project.new).tag(nil as UUID?)
+            if isExpertMode {
+                Picker(L10n.Project.title, selection: validProjectSelection) {
+                    if projectStore.projects.isEmpty {
+                        Text(L10n.Project.new).tag(nil as UUID?)
+                    }
+                    ForEach(projectStore.projects) { project in
+                        Text(project.name).tag(project.id as UUID?)
+                    }
                 }
-                ForEach(projectStore.projects) { project in
-                    Text(project.name).tag(project.id as UUID?)
+                .frame(width: 230)
+                Button {
+                    renameActiveProject()
+                } label: {
+                    Image(systemName: "pencil")
                 }
+                .help(L10n.Project.rename)
+                .disabled(projectStore.activeProject == nil)
+                Button {
+                    do {
+                        _ = try projectStore.createProject()
+                        clearWorkspace()
+                    } catch {
+                        exportError = error.localizedDescription
+                    }
+                } label: {
+                    Image(systemName: "plus")
+                }
+                .help(L10n.Project.new)
             }
-            .frame(width: 230)
             Button {
-                renameActiveProject()
+                toggleInterfaceMode()
             } label: {
-                Image(systemName: "pencil")
+                Label(
+                    isExpertMode ? L10n.Studio.simpleMode : L10n.Studio.expertMode,
+                    systemImage: isExpertMode ? "rectangle.compress.vertical" : "slider.horizontal.3"
+                )
             }
-            .help(L10n.Project.rename)
-            .disabled(projectStore.activeProject == nil)
-            Button {
-                do {
-                    _ = try projectStore.createProject()
-                    clearWorkspace()
-                } catch {
-                    exportError = error.localizedDescription
-                }
-            } label: {
-                Image(systemName: "plus")
-            }
-            .help(L10n.Project.new)
+            .buttonStyle(.bordered)
         }
+    }
+
+    private func toggleInterfaceMode() {
+        if isExpertMode {
+            promptPreparationTask?.cancel()
+            promptPreparationID = nil
+            promptPreparationTask = nil
+            isPreparingPrompt = false
+            syncSimpleCanvasSelection()
+        }
+        isExpertMode.toggle()
+    }
+
+    private var simpleStudio: some View {
+        VStack(alignment: .leading, spacing: 22) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(L10n.Studio.prompt)
+                    .font(.headline)
+                TextEditor(text: $prompt)
+                    .font(.body)
+                    .focused($promptEditorFocused)
+                    .scrollContentBackground(.hidden)
+                    .padding(14)
+                    .frame(height: 170)
+                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                promptEditorFocused ? Color.accentColor : Color.primary.opacity(0.32),
+                                lineWidth: promptEditorFocused ? 2 : 1
+                            )
+                    }
+                    .overlay(alignment: .topLeading) {
+                        if prompt.isEmpty {
+                            Text(L10n.Studio.promptPlaceholder)
+                                .foregroundStyle(.tertiary)
+                                .padding(.horizontal, 19)
+                                .padding(.vertical, 22)
+                                .allowsHitTesting(false)
+                        }
+                    }
+            }
+
+            HStack(alignment: .top, spacing: 22) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.Studio.engine).font(.headline)
+                    Picker(L10n.Studio.engine, selection: $appModel.generationBackend) {
+                        ForEach(GenerationBackend.allCases) { backend in
+                            Text(backend.choiceTitle).tag(backend)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+                    ModelAdviceView(backend: appModel.generationBackend,
+                                    width: simpleCanvas.width, height: simpleCanvas.height)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.Studio.preset).font(.headline)
+                    Picker(L10n.Studio.preset, selection: presetSelection) {
+                        ForEach(GenerationPreset.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+                }
+            }
+
+            HStack(alignment: .top, spacing: 22) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.Studio.format).font(.headline)
+                    Picker(L10n.Studio.format, selection: simpleFormatSelection) {
+                        ForEach(SimpleImageFormat.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+                }
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(L10n.Studio.size).font(.headline)
+                    Picker(L10n.Studio.size, selection: simpleSizeSelection) {
+                        ForEach(SimpleImageSize.allCases) { option in
+                            Text(option.title).tag(option)
+                        }
+                    }
+                    .labelsHidden()
+                    .frame(maxWidth: .infinity)
+                }
+            }
+
+            Text("\(simpleCanvas.width) × \(simpleCanvas.height) px")
+                .font(.caption)
+                .foregroundStyle(.secondary)
+
+            if !selectedModelIsReady {
+                Label(simpleModelWarning, systemImage: "exclamationmark.triangle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            if simpleImageSize == .large {
+                Label(L10n.Studio.highResolutionWarning, systemImage: "memorychip")
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+            }
+
+            Button {
+                startGeneration()
+            } label: {
+                Label(
+                    selectedModelIsReady ? L10n.Studio.generate : L10n.Studio.configureModel,
+                    systemImage: selectedModelIsReady ? "sparkles" : "externaldrive.badge.plus"
+                )
+                .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.borderedProminent)
+            .controlSize(.large)
+            .disabled(generation.state.isRunning || isPreparingPrompt ||
+                (selectedModelIsReady && prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty))
+
+            if shouldShowSimplePreview {
+                Divider()
+                Text(L10n.Studio.output).font(.headline)
+                simplePreviewContent
+            }
+        }
+        .padding(24)
+        .frame(maxWidth: 760)
+        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity)
+    }
+
+    private var simpleModelWarning: String {
+        if appModel.nsfwFilterEnabled && modelLibrary.state(for: .nsfwClassifier) != .ready {
+            return L10n.Studio.nsfwModelRequired
+        }
+        return L10n.Studio.modelRequired
+    }
+
+    private var shouldShowSimplePreview: Bool {
+        if previewOverrideURL != nil { return true }
+        if case .idle = generation.state { return false }
+        return true
+    }
+
+    @ViewBuilder
+    private var simplePreviewContent: some View {
+        switch generation.state {
+        case .completed(let url):
+            simpleResultPreview(url: previewOverrideURL ?? url)
+        case .idle:
+            if let previewOverrideURL { simpleResultPreview(url: previewOverrideURL) }
+        default:
+            previewContent
+        }
+    }
+
+    private func simpleResultPreview(url: URL) -> some View {
+        Image(nsImage: NSImage(contentsOf: url) ?? NSImage())
+            .resizable()
+            .scaledToFit()
+            .frame(maxWidth: .infinity, maxHeight: 420)
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay {
+                if appModel.nsfwFilterEnabled,
+                   let assessment = currentVariant?.contentSafety ?? generation.record?.contentSafety,
+                   assessment.needsCover,
+                   revealedSafetyPreviewURL != url {
+                    ContentSafetyCover(assessment: assessment) { revealedSafetyPreviewURL = url }
+                }
+            }
     }
 
     private var modeCard: some View {
         SurfaceCard {
             VStack(alignment: .leading, spacing: 14) {
                 SectionHeading(L10n.Studio.mode)
-                HStack(spacing: 10) {
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 110))], spacing: 10) {
                     ForEach(GenerationMode.allCases) { option in
                         ModeButton(mode: option, isSelected: mode == option) {
                             mode = option
+                            if option == .viewpointOrbit {
+                                useViggleTurbo = false
+                                useConsistencyLoRA = false
+                                enhancePrompt = false
+                                maskURL = nil
+                                preparedPromptSource = nil
+                                finalParentVariantID = nil
+                            }
                             if !option.acceptsReferences {
                                 referenceURLs.removeAll()
                                 maskURL = nil
-                                persistWorkspaceDraft()
                             }
+                            persistWorkspaceDraft()
                         }
                     }
                 }
@@ -206,7 +511,8 @@ struct StudioView: View {
     private var referencesCard: some View {
         SurfaceCard {
             VStack(alignment: .leading, spacing: 14) {
-                SectionHeading(L10n.Studio.references, subtitle: L10n.Studio.referencesSubtitle)
+                SectionHeading(L10n.Studio.references, subtitle: mode == .viewpointOrbit
+                    ? L10n.Studio.orbitReference : L10n.Studio.referencesSubtitle)
 
                 if referenceURLs.isEmpty {
                     Button(action: chooseReferences) {
@@ -214,7 +520,7 @@ struct StudioView: View {
                             Image(systemName: "photo.badge.plus")
                                 .font(.title2)
                             Text(L10n.Studio.addReferences).fontWeight(.medium)
-                            Text(L10n.Studio.noReferences)
+                            Text(mode == .viewpointOrbit ? "PNG / WebP" : L10n.Studio.noReferences)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
@@ -234,27 +540,78 @@ struct StudioView: View {
                                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
                             }
                             .buttonStyle(.plain)
-                            .disabled(referenceURLs.count >= 10)
+                            .disabled(referenceURLs.count >= (mode == .viewpointOrbit ? 1 : 10))
                         }
                     }
                     .scrollIndicators(.hidden)
 
-                    HStack {
-                        Button(maskURL == nil ? L10n.Mask.create : L10n.Mask.edit, systemImage: "paintbrush.pointed") {
-                            showMaskEditor = true
-                        }
-                        if maskURL != nil {
-                            Text(L10n.Mask.active)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Button(L10n.Mask.remove, role: .destructive) {
-                                maskURL = nil
-                                persistWorkspaceDraft()
+                    if mode != .viewpointOrbit {
+                        HStack {
+                            Button(maskURL == nil ? L10n.Mask.create : L10n.Mask.edit, systemImage: "paintbrush.pointed") {
+                                showMaskEditor = true
                             }
-                                .font(.caption)
+                            if maskURL != nil {
+                                Text(L10n.Mask.active)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                Spacer()
+                                Button(L10n.Mask.remove, role: .destructive) {
+                                    maskURL = nil
+                                    persistWorkspaceDraft()
+                                }
+                                    .font(.caption)
+                            }
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private var orbitCard: some View {
+        SurfaceCard {
+            VStack(alignment: .leading, spacing: 14) {
+                SectionHeading(L10n.Studio.orbitTitle)
+                Picker(L10n.Studio.orbitRotation, selection: Binding(
+                    get: { orbitSettings.rotation },
+                    set: { rotation in
+                        var settings = orbitSettings
+                        settings.rotation = rotation
+                        if !settings.isValid { settings.elevation = .elevated }
+                        orbitSettings = settings
+                    }
+                )) {
+                    ForEach(ViewpointOrbitSettings.Rotation.allCases) { rotation in
+                        Text(rotation.title).tag(rotation)
+                    }
+                }
+                Picker(L10n.Studio.orbitElevation, selection: $orbitSettings.elevation) {
+                    ForEach(ViewpointOrbitSettings.Elevation.allCases.filter {
+                        orbitSettings.rotation != .keepAngle || $0 != .eyeLevel
+                    }) { elevation in
+                        Text(elevation.title).tag(elevation)
+                    }
+                }
+                Text(L10n.Studio.orbitHelp)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                Label(L10n.Studio.orbitSettings, systemImage: "square.on.square.dashed")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                if referenceURLs.count != 1 {
+                    Label(L10n.Studio.orbitReference, systemImage: "photo.badge.plus")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                }
+                if appModel.generationBackend != .diffusers {
+                    Text(L10n.Studio.orbitFullModel).font(.callout)
+                    Button(L10n.Studio.orbitSelectFullModel) {
+                        appModel.generationBackend = .diffusers
+                    }
+                    .buttonStyle(.bordered)
+                } else if modelLibrary.state(for: .viewpointOrbit) != .ready {
+                    Button(L10n.Studio.orbitInstallRequired) { appModel.selection = .models }
+                        .buttonStyle(.bordered)
                 }
             }
         }
@@ -306,16 +663,24 @@ struct StudioView: View {
                 SectionHeading(L10n.Studio.prompt, subtitle: L10n.Studio.promptSubtitle)
                 TextEditor(text: $prompt)
                     .font(.body)
+                    .focused($promptEditorFocused)
                     .scrollContentBackground(.hidden)
-                    .padding(10)
+                    .padding(14)
                     .frame(height: 230)
-                    .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+                    .background(Color(nsColor: .textBackgroundColor), in: RoundedRectangle(cornerRadius: 12))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .strokeBorder(
+                                promptEditorFocused ? Color.accentColor : Color.primary.opacity(0.32),
+                                lineWidth: promptEditorFocused ? 2 : 1
+                            )
+                    }
                     .overlay(alignment: .topLeading) {
                         if prompt.isEmpty {
                             Text(L10n.Studio.promptPlaceholder)
                                 .foregroundStyle(.tertiary)
-                                .padding(.horizontal, 15)
-                                .padding(.vertical, 18)
+                                .padding(.horizontal, 19)
+                                .padding(.vertical, 22)
                             .allowsHitTesting(false)
                         }
                     }
@@ -325,6 +690,10 @@ struct StudioView: View {
                         resetPrompts()
                     }
                     .disabled(prompt.isEmpty && negativePrompt.isEmpty)
+
+                    Button(L10n.Studio.promptHistory, systemImage: "clock.arrow.circlepath") {
+                        appModel.selection = .prompts
+                    }
 
                     Spacer()
 
@@ -382,9 +751,29 @@ struct StudioView: View {
         SurfaceCard {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
-                    SectionHeading(displayedPromptResult?.title ?? L10n.Studio.enhancedPrompt)
+                    SectionHeading(hasCurrentPreparedPrompt ? L10n.Studio.enhancedPrompt
+                        : (displayedPromptResult?.title ?? L10n.Studio.enhancedPrompt))
                     Spacer()
-                    if let result = displayedPromptResult {
+                    if enhancePrompt {
+                        Button(L10n.Studio.preparePrompt, systemImage: "sparkles") {
+                            preparePromptBeforeGeneration()
+                        }
+                        .disabled(isPreparingPrompt || generation.state.isRunning
+                            || prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                            || modelLibrary.state(for: .promptEnhancer) != .ready
+                            || !modelLibrary.canGenerate(using: appModel.generationBackend))
+                    }
+                    if isPreparingPrompt {
+                        Button(L10n.Common.cancel) {
+                            promptPreparationTask?.cancel()
+                            promptPreparationID = nil
+                            isPreparingPrompt = false
+                        }
+                    }
+                    if let result = hasCurrentPreparedPrompt
+                        ? (title: L10n.Studio.enhancedPrompt, value: preparedPrompt,
+                           copyHelp: L10n.Studio.copyEnhancedPrompt)
+                        : displayedPromptResult {
                         Button(
                             variantPromptWasSaved ? L10n.Studio.variantPromptSaved : L10n.Studio.saveVariantPrompt,
                             systemImage: variantPromptWasSaved ? "checkmark.circle.fill" : "square.and.arrow.down"
@@ -392,6 +781,7 @@ struct StudioView: View {
                             saveVariantPrompt(result.value)
                         }
                         .buttonStyle(.bordered)
+                        .disabled(result.value.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
 
                         Button {
                             NSPasteboard.general.clearContents()
@@ -404,25 +794,53 @@ struct StudioView: View {
                     }
                 }
 
-                ScrollView {
-                    if let result = displayedPromptResult {
-                        Text(result.value)
-                            .font(.body)
-                            .textSelection(.enabled)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else if case .enhancingPrompt = generation.state {
-                        ProgressView(L10n.Studio.outputEnhancingPrompt)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    } else {
-                        Text(L10n.Studio.enhancedPromptPlaceholder)
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
+                if let improved = transferableEnhancedPrompt {
+                    Button(L10n.Studio.sendEnhancedToPrompt, systemImage: "arrow.up.left.square") {
+                        sendEnhancedToPrompt(improved)
                     }
+                    .buttonStyle(.bordered)
+                    .help(L10n.Studio.sendEnhancedToPromptHelp)
                 }
-                .contentMargins(12)
-                .frame(height: 230)
-                .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+
+                if hasCurrentPreparedPrompt {
+                    TextEditor(text: $preparedPrompt)
+                        .font(.body)
+                        .scrollContentBackground(.hidden)
+                        .padding(10)
+                        .frame(height: 230)
+                        .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+                    Picker(L10n.Studio.promptToUse, selection: $usePreparedPrompt) {
+                        Text(L10n.Studio.originalPrompt).tag(false)
+                        Text(L10n.Studio.enhancedPrompt).tag(true)
+                    }
+                    .pickerStyle(.segmented)
+                    Text(L10n.Studio.promptChoiceHint)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    ScrollView {
+                        if isPreparingPrompt {
+                            ProgressView(L10n.Studio.outputEnhancingPrompt)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if let result = displayedPromptResult {
+                            Text(result.value)
+                                .font(.body)
+                                .textSelection(.enabled)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else if case .enhancingPrompt = generation.state {
+                            ProgressView(L10n.Studio.outputEnhancingPrompt)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        } else {
+                            Text(L10n.Studio.enhancedPromptPlaceholder)
+                                .font(.body)
+                                .foregroundStyle(.secondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                    }
+                    .contentMargins(12)
+                    .frame(height: 230)
+                    .background(.background.opacity(0.55), in: RoundedRectangle(cornerRadius: 12))
+                }
             }
         }
     }
@@ -433,6 +851,7 @@ struct StudioView: View {
         case .edit: L10n.Studio.guideEdit
         case .characterSheet: L10n.Studio.guideCharacter
         case .transparentAsset: L10n.Studio.guideTransparent
+        case .viewpointOrbit: L10n.Studio.orbitHelp
         }
     }
 
@@ -440,7 +859,7 @@ struct StudioView: View {
         SurfaceCard {
             VStack(alignment: .leading, spacing: 14) {
                 SectionHeading(L10n.Studio.preset)
-                Picker(L10n.Studio.preset, selection: $preset) {
+                Picker(L10n.Studio.preset, selection: presetSelection) {
                     ForEach(GenerationPreset.allCases) { option in
                         Label(option.title, systemImage: option.systemImage)
                             .tag(option)
@@ -458,7 +877,120 @@ struct StudioView: View {
                 }
                 .font(.caption)
                 .foregroundStyle(.secondary)
+
+                if preset != .fastDraft {
+                    Button(L10n.Studio.prepareDraft, systemImage: "hare") {
+                        preset = .fastDraft
+                        resolution = GenerationPreset.fastDraft.resolution
+                        steps = Double(GenerationPreset.fastDraft.steps)
+                        if appModel.generationBackend == .diffusers,
+                           modelLibrary.state(for: .viggleTurbo) == .ready,
+                           referenceURLs.count <= 3, negativePrompt.isEmpty {
+                            useConsistencyLoRA = false
+                            useViggleTurbo = true
+                        }
+                        finalParentVariantID = nil
+                    }
+                    .buttonStyle(.bordered)
+                }
             }
+        }
+    }
+
+    private var presetSelection: Binding<GenerationPreset> {
+        Binding(
+            get: { preset },
+            set: { value in
+                preset = value
+                resolution = value.resolution
+                steps = Double(value.steps)
+                syncSimpleCanvasSelection()
+            }
+        )
+    }
+
+    private var viggleSelection: Binding<Bool> {
+        Binding(
+            get: { useViggleTurbo },
+            set: { enabled in
+                useViggleTurbo = enabled
+                if enabled { useConsistencyLoRA = false }
+            }
+        )
+    }
+
+    private var consistencySelection: Binding<Bool> {
+        Binding(
+            get: { useConsistencyLoRA },
+            set: { enabled in
+                useConsistencyLoRA = enabled
+                if enabled { useViggleTurbo = false }
+                persistWorkspaceDraft()
+            }
+        )
+    }
+
+    private var simpleFormatSelection: Binding<SimpleImageFormat> {
+        Binding(
+            get: { simpleImageFormat },
+            set: { value in
+                simpleImageFormat = value
+                applySimpleCanvasSelection()
+            }
+        )
+    }
+
+    private var simpleSizeSelection: Binding<SimpleImageSize> {
+        Binding(
+            get: { simpleImageSize },
+            set: { value in
+                simpleImageSize = value
+                applySimpleCanvasSelection()
+            }
+        )
+    }
+
+    private var simpleCanvas: (resolution: CanvasResolution, width: Int, height: Int) {
+        switch (simpleImageFormat, simpleImageSize) {
+        case (.square, .standard): (.square, 1_024, 1_024)
+        case (.square, .large): (.square2K, 2_048, 2_048)
+        case (.landscape, .standard): (.landscape, 1_344, 768)
+        case (.landscape, .large): (.landscape2K, 2_048, 1_152)
+        case (.portrait, .standard): (.portrait, 768, 1_344)
+        case (.portrait, .large): (.portrait2K, 1_152, 2_048)
+        case (.socialPortrait, .standard): (.socialPortrait, 1_024, 1_280)
+        case (.socialPortrait, .large): (.custom, 1_536, 1_920)
+        case (.ultrawide, .standard): (.ultrawide, 1_536, 672)
+        case (.ultrawide, .large): (.custom, 2_048, 896)
+        }
+    }
+
+    private func applySimpleCanvasSelection() {
+        let canvas = simpleCanvas
+        resolution = canvas.resolution
+        if canvas.resolution == .custom {
+            customWidth = canvas.width
+            customHeight = canvas.height
+        }
+    }
+
+    private func syncSimpleCanvasSelection() {
+        simpleImageSize = max(
+            resolution == .custom ? customWidth : resolution.width,
+            resolution == .custom ? customHeight : resolution.height
+        ) >= 1_800 ? .large : .standard
+
+        switch resolution {
+        case .square, .square2K: simpleImageFormat = .square
+        case .landscape, .landscape2K: simpleImageFormat = .landscape
+        case .portrait, .portrait2K: simpleImageFormat = .portrait
+        case .socialPortrait: simpleImageFormat = .socialPortrait
+        case .ultrawide: simpleImageFormat = .ultrawide
+        case .custom:
+            let ratio = Double(customWidth) / Double(max(customHeight, 1))
+            simpleImageFormat = SimpleImageFormat.allCases.min {
+                abs($0.aspectRatio - ratio) < abs($1.aspectRatio - ratio)
+            } ?? .square
         }
     }
 
@@ -478,6 +1010,20 @@ struct StudioView: View {
         currentVariant?.request ?? generation.record?.request ?? previewRequest
     }
 
+    private var promptPreviewSource: PromptPreviewSource {
+        PromptPreviewSource(
+            prompt: prompt,
+            mode: mode,
+            preset: preset,
+            references: referenceURLs,
+            backend: appModel.generationBackend
+        )
+    }
+
+    private var hasCurrentPreparedPrompt: Bool {
+        enhancePrompt && preparedPromptSource == promptPreviewSource
+    }
+
     private var displayedPromptResult: (title: String, value: String, copyHelp: String)? {
         guard let request = displayedPromptRequest else { return nil }
         if let enhancedPrompt = request.enhancedPrompt {
@@ -485,6 +1031,12 @@ struct StudioView: View {
         }
         guard !request.enhancePrompt else { return nil }
         return (L10n.Studio.finalPrompt, request.prompt, L10n.Studio.copyFinalPrompt)
+    }
+
+    private var transferableEnhancedPrompt: String? {
+        let text = hasCurrentPreparedPrompt ? preparedPrompt : displayedPromptRequest?.enhancedPrompt
+        guard let text, !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return nil }
+        return text
     }
 
     private var currentVariant: ProjectVariant? {
@@ -571,6 +1123,8 @@ struct StudioView: View {
             progressPreview(title: L10n.Studio.outputEnhancingPrompt, progress: nil)
         case .generating(let progress):
             progressPreview(title: L10n.Studio.outputGenerating, progress: progress)
+        case .screeningContent:
+            progressPreview(title: L10n.Studio.outputScreeningContent, progress: nil)
         case .failed(let message):
             VStack(spacing: 9) {
                 Image(systemName: "exclamationmark.triangle.fill")
@@ -604,13 +1158,31 @@ struct StudioView: View {
                 .scaledToFit()
                 .frame(maxWidth: .infinity, maxHeight: 310)
                 .clipShape(RoundedRectangle(cornerRadius: 13))
+                .overlay {
+                    if appModel.nsfwFilterEnabled,
+                       let assessment = currentVariant?.contentSafety ?? generation.record?.contentSafety,
+                       assessment.needsCover,
+                       revealedSafetyPreviewURL != url {
+                        ContentSafetyCover(assessment: assessment) { revealedSafetyPreviewURL = url }
+                    }
+                }
             Text(url.lastPathComponent)
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
+            if appModel.nsfwFilterEnabled,
+               let variant = currentVariant,
+               variant.contentSafety?.verdict == .unavailable {
+                Button(isRetryingSafety ? L10n.Safety.retrying : L10n.Safety.retry,
+                       systemImage: "arrow.clockwise") {
+                    retrySafetyAssessment(for: variant)
+                }
+                .disabled(isRetryingSafety || generation.state.isRunning)
+            }
 
             HStack(spacing: 8) {
                 Button(L10n.Studio.variation, systemImage: "square.on.square") {
+                    finalParentVariantID = nil
                     randomizeSeed = true
                     startGeneration(kind: .variation, parentID: currentVariantID)
                 }
@@ -622,6 +1194,29 @@ struct StudioView: View {
                     Label(isUpscaling ? "…" : "2× / 4×", systemImage: "arrow.up.left.and.arrow.down.right")
                 }
                 .disabled(isUpscaling || generation.state.isRunning)
+            }
+
+            if let variant = currentVariant, variant.request.preset == .fastDraft {
+                Button(L10n.Studio.prepareFinal, systemImage: "sparkles.rectangle.stack") {
+                    prepareFinalVersion(from: variant)
+                }
+                .buttonStyle(.bordered)
+                .disabled(generation.state.isRunning || isUpscaling)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+
+            if currentVariant != nil {
+                Button(L10n.Library.comparisonTitle, systemImage: "rectangle.split.2x1") {
+                    appModel.selection = .library
+                }
+                .buttonStyle(.bordered)
+                .disabled((projectStore.activeProject?.variants.count ?? 0) < 2)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                if (projectStore.activeProject?.variants.count ?? 0) < 2 {
+                    Text(L10n.Studio.compareNeedsTwo)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
 
             if isUpscaling { ProgressView().controlSize(.small) }
@@ -669,6 +1264,21 @@ struct StudioView: View {
                     .font(.caption.monospacedDigit())
                     .foregroundStyle(.secondary)
             }
+            if let progress {
+                TimelineView(.periodic(from: .now, by: 1)) { timeline in
+                    if let remaining = remainingDuration(at: timeline.date, progress: progress) {
+                        Text("\(L10n.Studio.estimatedRemaining) \(durationLabel(remaining))")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    } else if let estimate = estimatedGenerationDuration,
+                              let started = generation.record?.request.createdAt,
+                              timeline.date.timeIntervalSince(started) >= estimate {
+                        Text(L10n.Studio.estimateExceeded)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
             Button(L10n.Studio.cancelGeneration, role: .cancel) { generation.cancel() }
                 .font(.caption)
         }
@@ -684,7 +1294,7 @@ struct StudioView: View {
                 LabeledContent(L10n.Studio.engine) {
                     Picker(L10n.Studio.engine, selection: $appModel.generationBackend) {
                         ForEach(GenerationBackend.allCases) { backend in
-                            Text(backend.name).tag(backend)
+                            Text(backend.choiceTitle).tag(backend)
                         }
                     }
                     .labelsHidden()
@@ -694,10 +1304,13 @@ struct StudioView: View {
                 Text(appModel.generationBackend.detail)
                     .font(.caption)
                     .foregroundStyle(.secondary)
+                ModelAdviceView(backend: appModel.generationBackend,
+                                width: resolution == .custom ? customWidth : resolution.width,
+                                height: resolution == .custom ? customHeight : resolution.height)
 
-                if appModel.generationBackend == .diffusers {
+                if appModel.generationBackend == .diffusers && !orbitIsSelected {
                     HStack(spacing: 8) {
-                        Toggle(L10n.Studio.viggleTurbo, isOn: $useViggleTurbo)
+                        Toggle(L10n.Studio.viggleTurbo, isOn: viggleSelection)
                         Button {
                             showViggleHelp = true
                         } label: {
@@ -724,24 +1337,80 @@ struct StudioView: View {
                             .font(.caption)
                             .foregroundStyle(.orange)
                     }
-                }
-
-                LabeledContent(L10n.Studio.resolution) {
-                    Picker(L10n.Studio.resolution, selection: $resolution) {
-                        ForEach(CanvasResolution.allCases) { Text($0.title).tag($0) }
+                    if mode == .edit {
+                        HStack(spacing: 8) {
+                            Toggle(L10n.Studio.consistencyLoRA, isOn: consistencySelection)
+                            Button {
+                                showConsistencyHelp = true
+                            } label: {
+                                Image(systemName: "questionmark.circle")
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(L10n.Studio.consistencyHelp)
+                            .help(L10n.Studio.consistencyHelp)
+                            .popover(isPresented: $showConsistencyHelp) {
+                                Text(L10n.Studio.consistencyHelp)
+                                    .font(.callout)
+                                    .padding(16)
+                                    .frame(width: 310)
+                            }
+                        }
+                        if useConsistencyLoRA && modelLibrary.state(for: .consistencyLoRA) != .ready {
+                            Label(L10n.Studio.consistencyInstallRequired, systemImage: "arrow.down.circle")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                        if useConsistencyLoRA && referenceURLs.count != 1 {
+                            Label(L10n.Studio.consistencyOneReference, systemImage: "exclamationmark.triangle")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                        if useConsistencyLoRA, let referenceSize = consistencyReferenceSize,
+                           referenceSize.width != (resolution == .custom ? customWidth : resolution.width)
+                            || referenceSize.height != (resolution == .custom ? customHeight : resolution.height) {
+                            Label(L10n.Studio.consistencySizeMismatch, systemImage: "aspectratio")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                            if CanvasResolution.isValidCustomDimension(referenceSize.width)
+                                && CanvasResolution.isValidCustomDimension(referenceSize.height) {
+                                Button(L10n.Studio.consistencyMatchReference) {
+                                    resolution = .custom
+                                    customWidth = referenceSize.width
+                                    customHeight = referenceSize.height
+                                }
+                                .buttonStyle(.bordered)
+                            }
+                        }
+                        if useConsistencyLoRA && consistencyUsesUntestedResolution {
+                            Label(L10n.Studio.consistencyHighResolution, systemImage: "memorychip")
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
                     }
-                    .labelsHidden()
-                    .frame(width: 176)
                 }
 
-                if resolution == .custom {
-                    customResolutionEditor
-                }
+                if orbitIsSelected {
+                    Text(L10n.Studio.orbitSettings)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    LabeledContent(L10n.Studio.resolution) {
+                        Picker(L10n.Studio.resolution, selection: $resolution) {
+                            ForEach(CanvasResolution.allCases) { Text($0.title).tag($0) }
+                        }
+                        .labelsHidden()
+                        .frame(width: 176)
+                    }
 
-                if usesHighResolution {
-                    Label(L10n.Studio.highResolutionWarning, systemImage: "memorychip")
-                        .font(.caption2)
-                        .foregroundStyle(.orange)
+                    if resolution == .custom {
+                        customResolutionEditor
+                    }
+
+                    if usesHighResolution {
+                        Label(L10n.Studio.highResolutionWarning, systemImage: "memorychip")
+                            .font(.caption2)
+                            .foregroundStyle(.orange)
+                    }
                 }
 
                 DisclosureGroup(L10n.Studio.advanced, isExpanded: $showAdvanced) {
@@ -749,51 +1418,74 @@ struct StudioView: View {
                         HStack {
                             Text(L10n.Studio.steps)
                             Spacer()
-                            Text(useViggleTurbo && appModel.generationBackend == .diffusers ? "6" : "\(Int(steps))")
+                            Text(appModel.generationBackend.fixedStepCount.map(String.init) ?? (orbitIsSelected ? "40" : (useViggleTurbo && appModel.generationBackend == .diffusers ? "6" : "\(Int(steps))")))
                                 .foregroundStyle(.secondary)
                         }
                         Slider(value: $steps, in: 10...50, step: 1)
-                            .disabled(useViggleTurbo && appModel.generationBackend == .diffusers)
+                            .disabled(appModel.generationBackend.fixedStepCount != nil || orbitIsSelected || (useViggleTurbo && appModel.generationBackend == .diffusers))
 
                         Toggle(L10n.Studio.randomSeed, isOn: $randomizeSeed)
                         if !randomizeSeed {
                             Stepper("\(L10n.Studio.seed): \(seed)", value: $seed, in: 0...Int(Int32.max))
                         }
                         Toggle(L10n.Studio.enhancePrompt, isOn: $enhancePrompt)
-                            .disabled(appModel.generationBackend == .ggufQ6)
-                        if appModel.generationBackend == .ggufQ6 {
-                            Text(L10n.Studio.enhancerDiffusersOnly)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                        } else if enhancePrompt && modelLibrary.state(for: .promptEnhancer) != .ready {
+                            .disabled(orbitIsSelected)
+                        if enhancePrompt && !hasCurrentPreparedPrompt
+                            && modelLibrary.state(for: .promptEnhancer) != .ready {
                             Text(L10n.Studio.enhancerInstallRequired)
                                 .font(.caption2)
                                 .foregroundStyle(.orange)
                         }
                         TextField(L10n.Studio.negativePlaceholder, text: $negativePrompt, axis: .vertical)
                             .textFieldStyle(.roundedBorder)
-                            .disabled(useViggleTurbo && appModel.generationBackend == .diffusers)
+                            .disabled(!appModel.generationBackend.supportsNegativePrompt || orbitIsSelected || (useViggleTurbo && appModel.generationBackend == .diffusers)
+                                || consistencyIsSelected)
                     }
                     .padding(.top, 12)
                 }
 
                 Divider()
 
-                if !selectedModelIsReady {
+                if let estimate = estimatedGenerationDuration {
+                    Label("\(L10n.Studio.estimatedDuration) \(durationLabel(estimate))", systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Label(L10n.Studio.estimateUnavailable, systemImage: "clock")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if finalParentVariantID != nil {
+                    Label(L10n.Studio.finalReady, systemImage: "sparkles.rectangle.stack")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+
+                if orbitIsSelected && appModel.generationBackend != .diffusers {
+                    Label(L10n.Studio.orbitFullModel, systemImage: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                } else if orbitIsSelected && modelLibrary.state(for: .viewpointOrbit) != .ready {
+                    Label(L10n.Studio.orbitInstallRequired, systemImage: "arrow.down.circle")
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                } else if !selectedModelIsReady {
                     Label(
-                        useViggleTurbo && appModel.generationBackend == .diffusers
+                        appModel.nsfwFilterEnabled && modelLibrary.state(for: .nsfwClassifier) != .ready
+                            ? L10n.Studio.nsfwModelRequired
+                            : (useViggleTurbo && appModel.generationBackend == .diffusers
                             && modelLibrary.canGenerate(using: .diffusers)
                             && modelLibrary.state(for: .viggleTurbo) != .ready
                             ? L10n.Studio.viggleInstallRequired
-                            : (enhancePrompt && appModel.generationBackend != .ggufQ6
+                            : (enhancePrompt
                                 && modelLibrary.state(for: .promptEnhancer) != .ready
-                                ? L10n.Studio.enhancerInstallRequired : L10n.Studio.modelRequired),
+                                ? L10n.Studio.enhancerInstallRequired : L10n.Studio.modelRequired)),
                         systemImage: "exclamationmark.triangle"
                     )
                         .font(.caption)
                         .foregroundStyle(.secondary)
-                } else if appModel.generationBackend != .ggufQ6,
-                          case .failed = generation.state {
+                } else if case .failed = generation.state {
                     Label(L10n.Studio.runtimeRequired, systemImage: "gearshape.2")
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -803,7 +1495,9 @@ struct StudioView: View {
                     startGeneration()
                 } label: {
                     Label(
-                        selectedModelIsReady ? L10n.Studio.generate : L10n.Studio.configureModel,
+                        selectedModelIsReady
+                            ? (finalParentVariantID == nil ? L10n.Studio.generate : L10n.Studio.generateFinal)
+                            : L10n.Studio.configureModel,
                         systemImage: selectedModelIsReady ? "sparkles" : "externaldrive.badge.plus"
                     )
                     .frame(maxWidth: .infinity)
@@ -811,11 +1505,15 @@ struct StudioView: View {
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .disabled(
-                    generation.state.isRunning ||
-                    (selectedModelIsReady && prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ||
+                    generation.state.isRunning || isPreparingPrompt ||
+                    (!orbitIsSelected && hasCurrentPreparedPrompt && usePreparedPrompt
+                        && preparedPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ||
+                    (selectedModelIsReady && !orbitIsSelected && prompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty) ||
+                    (selectedModelIsReady && orbitIsSelected && (referenceURLs.count != 1 || !orbitSettings.isValid)) ||
                     (selectedModelIsReady && mode == .edit && referenceURLs.isEmpty) ||
                     (selectedModelIsReady && useViggleTurbo && appModel.generationBackend == .diffusers
                         && referenceURLs.count > 3) ||
+                    (selectedModelIsReady && consistencyIsSelected && referenceURLs.count != 1) ||
                     (selectedModelIsReady && !customResolutionIsValid)
                 )
             }
@@ -824,12 +1522,12 @@ struct StudioView: View {
 
     private func chooseReferences() {
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [.png, .jpeg, .heic, .webP]
-        panel.allowsMultipleSelection = true
+        panel.allowedContentTypes = mode == .viewpointOrbit ? [.png, .webP] : [.png, .jpeg, .heic, .webP]
+        panel.allowsMultipleSelection = mode != .viewpointOrbit
         panel.canChooseDirectories = false
 
         guard panel.runModal() == .OK else { return }
-        let availableSlots = max(0, 10 - referenceURLs.count)
+        let availableSlots = max(0, (mode == .viewpointOrbit ? 1 : 10) - referenceURLs.count)
         referenceURLs.append(contentsOf: panel.urls.prefix(availableSlots).filter { !referenceURLs.contains($0) })
         persistWorkspaceDraft()
     }
@@ -838,22 +1536,27 @@ struct StudioView: View {
     private func persistWorkspaceDraft(persistPrompts: Bool = false) -> Bool {
         let previousRequest = projectStore.activeProject?.draft
             ?? projectStore.activeProject?.variants.max(by: { $0.createdAt < $1.createdAt })?.request
-        let request = GenerationRequest(
+        var request = GenerationRequest(
             mode: mode,
             preset: preset,
             prompt: persistPrompts ? prompt : (previousRequest?.originalPrompt ?? previousRequest?.prompt ?? prompt),
-            negativePrompt: persistPrompts ? negativePrompt : (previousRequest?.negativePrompt ?? negativePrompt),
+            negativePrompt: appModel.generationBackend.supportsNegativePrompt
+                ? (persistPrompts ? negativePrompt : (previousRequest?.negativePrompt ?? negativePrompt)) : "",
             resolution: resolution,
             customWidth: resolution == .custom ? customWidth : nil,
             customHeight: resolution == .custom ? customHeight : nil,
-            steps: useViggleTurbo && appModel.generationBackend == .diffusers ? 6 : Int(steps),
+            steps: appModel.generationBackend.fixedStepCount ?? (useViggleTurbo && appModel.generationBackend == .diffusers ? 6 : Int(steps)),
             seed: UInt32(seed),
             randomizeSeed: randomizeSeed,
             enhancePrompt: enhancePrompt,
             useViggleTurbo: useViggleTurbo && appModel.generationBackend == .diffusers,
+            useConsistencyLoRA: useConsistencyLoRA && mode == .edit
+                && appModel.generationBackend == .diffusers && !useViggleTurbo,
+            backend: appModel.generationBackend,
             referenceImages: referenceURLs,
             maskImage: maskURL
         )
+        if mode == .viewpointOrbit { request.configureViewpointOrbit(orbitSettings) }
         do {
             let archivedRequest = try projectStore.saveActiveProjectDraft(request)
             referenceURLs = archivedRequest.referenceImages
@@ -889,7 +1592,8 @@ struct StudioView: View {
         do {
             try projectStore.savePrompt(
                 prompt: value,
-                negativePrompt: displayedPromptRequest?.negativePrompt ?? ""
+                negativePrompt: hasCurrentPreparedPrompt
+                    ? negativePrompt : (displayedPromptRequest?.negativePrompt ?? "")
             )
             variantPromptWasSaved = true
         } catch {
@@ -898,14 +1602,34 @@ struct StudioView: View {
         }
     }
 
+    private func sendEnhancedToPrompt(_ value: String) {
+        prompt = value
+        enhancePrompt = false
+        preset = .none
+        preparedPromptSource = nil
+        promptsWereSaved = false
+        promptEditorFocused = true
+    }
+
     private func openRequestedPrompt() {
-        guard let id = appModel.promptToOpenID else { return }
-        if let savedPrompt = projectStore.savedPrompts.first(where: { $0.id == id }) {
-            prompt = savedPrompt.prompt
-            negativePrompt = savedPrompt.negativePrompt
-            promptsWereSaved = false
+        if let id = appModel.promptToOpenID {
+            if let savedPrompt = projectStore.savedPrompts.first(where: { $0.id == id }) {
+                prompt = savedPrompt.prompt
+                negativePrompt = savedPrompt.negativePrompt
+                promptsWereSaved = false
+            }
+            appModel.promptToOpenID = nil
         }
-        appModel.promptToOpenID = nil
+        if let selection = appModel.promptHistoryToOpen {
+            if let entry = projectStore.promptHistory.first(where: { $0.id == selection.id }) {
+                prompt = selection.useOriginal ? entry.originalPrompt : entry.usedPrompt
+                negativePrompt = entry.negativePrompt
+                enhancePrompt = false
+                preset = .none
+                promptsWereSaved = false
+            }
+            appModel.promptHistoryToOpen = nil
+        }
     }
 
     private func deletePendingReference() {
@@ -926,21 +1650,173 @@ struct StudioView: View {
         modelLibrary.refresh(in: storage.modelsURL)
     }
 
+    private func makeGenerationRequest() -> GenerationRequest {
+        let turboSelected = isExpertMode && !orbitIsSelected && appModel.generationBackend == .diffusers && useViggleTurbo
+        let selectedCanvas = simpleCanvas
+        var request = GenerationRequest(
+            mode: isExpertMode ? mode : .create,
+            preset: preset,
+            prompt: preset.applyingStyle(to: prompt.trimmingCharacters(in: .whitespacesAndNewlines)),
+            originalPrompt: prompt,
+            negativePrompt: appModel.generationBackend.supportsNegativePrompt && isExpertMode && !consistencyIsSelected
+                ? negativePrompt.trimmingCharacters(in: .whitespacesAndNewlines) : "",
+            resolution: isExpertMode ? resolution : selectedCanvas.resolution,
+            customWidth: isExpertMode
+                ? (resolution == .custom ? customWidth : nil)
+                : (selectedCanvas.resolution == .custom ? selectedCanvas.width : nil),
+            customHeight: isExpertMode
+                ? (resolution == .custom ? customHeight : nil)
+                : (selectedCanvas.resolution == .custom ? selectedCanvas.height : nil),
+            steps: appModel.generationBackend.fixedStepCount ?? (isExpertMode ? (turboSelected ? 6 : Int(steps)) : preset.steps),
+            seed: UInt32(seed),
+            randomizeSeed: isExpertMode ? randomizeSeed : true,
+            enhancePrompt: isExpertMode && enhancePrompt,
+            useViggleTurbo: turboSelected,
+            useConsistencyLoRA: consistencyIsSelected && !turboSelected,
+            backend: appModel.generationBackend,
+            referenceImages: isExpertMode ? referenceURLs : [],
+            maskImage: isExpertMode ? maskURL : nil
+        )
+        if orbitIsSelected { request.configureViewpointOrbit(orbitSettings) }
+        return request
+    }
+
+    private func preparePromptBeforeGeneration() {
+        guard !isPreparingPrompt,
+              !generation.state.isRunning,
+              !orbitIsSelected,
+              let enhancerRoot = modelLibrary.installationURL(for: .promptEnhancer),
+              let modelRoot = modelLibrary.installationURL(for: appModel.generationBackend.modelPackage) else {
+            return
+        }
+        let source = promptPreviewSource
+        let request = makeGenerationRequest()
+        let previousPreparation = promptPreparationTask
+        let preparationID = UUID()
+        promptPreparationID = preparationID
+        isPreparingPrompt = true
+        promptPreparationTask = Task {
+            await previousPreparation?.value
+            guard !Task.isCancelled, promptPreparationID == preparationID else { return }
+            do {
+                let result = try await generation.preparePrompt(
+                    request: request,
+                    modelRoot: enhancerRoot,
+                    runtimeModelRoot: modelRoot,
+                    outputDirectory: FileManager.default.temporaryDirectory
+                )
+                guard !Task.isCancelled, promptPreparationID == preparationID,
+                      source == promptPreviewSource else { return }
+                preparedPrompt = result
+                preparedPromptSource = source
+                usePreparedPrompt = true
+                variantPromptWasSaved = false
+            } catch is CancellationError {
+                // The text changed or the view closed while the preview was running.
+            } catch {
+                if !Task.isCancelled && promptPreparationID == preparationID {
+                    exportError = error.localizedDescription
+                }
+            }
+            if promptPreparationID == preparationID {
+                isPreparingPrompt = false
+                promptPreparationTask = nil
+                promptPreparationID = nil
+            }
+        }
+    }
+
+    private func prepareFinalVersion(from draft: ProjectVariant) {
+        projectStore.variantToOpenID = draft.id
+        loadActiveProject()
+        preset = .none
+        steps = max(40, steps)
+        useViggleTurbo = false
+        finalParentVariantID = draft.id
+        if let enhanced = draft.request.enhancedPrompt,
+           !enhanced.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            preparedPrompt = enhanced
+            preparedPromptSource = promptPreviewSource
+            usePreparedPrompt = true
+        }
+    }
+
+    private var estimatedGenerationDuration: TimeInterval? {
+        let target = makeGenerationRequest()
+        let samples = projectStore.projects
+            .flatMap(\.variants)
+            .filter { $0.kind == .generation || $0.kind == .variation }
+            .filter { $0.request.backend == target.backend
+                && $0.request.useViggleTurbo == target.useViggleTurbo
+                && $0.request.useConsistencyLoRA == target.useConsistencyLoRA
+                && ($0.request.mode == .viewpointOrbit) == (target.mode == .viewpointOrbit) }
+            .sorted { $0.createdAt > $1.createdAt }
+            .prefix(8)
+            .compactMap { variant -> TimeInterval? in
+                let duration = variant.createdAt.timeIntervalSince(variant.request.createdAt)
+                guard (5...14_400).contains(duration), variant.request.steps > 0 else { return nil }
+                let pixelRatio = Double(target.width * target.height)
+                    / Double(variant.request.width * variant.request.height)
+                let stepRatio = Double(target.steps) / Double(variant.request.steps)
+                return min(14_400, duration * pixelRatio * stepRatio)
+            }
+            .sorted()
+        guard !samples.isEmpty else { return nil }
+        return samples[samples.count / 2]
+    }
+
+    private func remainingDuration(at date: Date, progress: Double) -> TimeInterval? {
+        if progress >= 0.10, progress < 1,
+           let started = generation.generatingStartedAt {
+            let generatingElapsed = max(0, date.timeIntervalSince(started))
+            if generatingElapsed > 5 {
+                return min(14_400, generatingElapsed * (1 - progress) / progress)
+            }
+        }
+        guard let estimate = estimatedGenerationDuration,
+              let started = generation.record?.request.createdAt else { return nil }
+        let remaining = estimate - date.timeIntervalSince(started)
+        return remaining > 0 ? remaining : nil
+    }
+
+    private func durationLabel(_ seconds: TimeInterval) -> String {
+        let minutes = max(1, Int((seconds / 60).rounded()))
+        return "~\(minutes) min"
+    }
+
     private func startGeneration(
         kind: ProjectVariant.Kind = .generation,
         parentID: UUID? = nil
     ) {
         refreshModelAvailability()
-        let turboSelected = appModel.generationBackend == .diffusers && useViggleTurbo
+        guard !isPreparingPrompt else { return }
+        if isExpertMode && !orbitIsSelected && hasCurrentPreparedPrompt && usePreparedPrompt
+            && preparedPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            exportError = L10n.Studio.preparedPromptEmpty
+            return
+        }
+        if orbitIsSelected && (referenceURLs.count != 1 || !orbitSettings.isValid) {
+            exportError = L10n.Studio.orbitReference
+            return
+        }
+        let turboSelected = isExpertMode && !orbitIsSelected && appModel.generationBackend == .diffusers && useViggleTurbo
         guard !turboSelected || referenceURLs.count <= 3 else {
             exportError = L10n.Studio.viggleMaxReferences
             return
         }
+        guard !consistencyIsSelected || referenceURLs.count == 1 else {
+            exportError = L10n.Studio.consistencyOneReference
+            return
+        }
         let package = appModel.generationBackend.modelPackage
-        guard modelLibrary.canGenerate(using: appModel.generationBackend),
+        guard appModel.generationBackend.advice.rating != .incompatible,
+              modelLibrary.canGenerate(using: appModel.generationBackend),
               (!turboSelected || modelLibrary.state(for: .viggleTurbo) == .ready),
-              (!enhancePrompt || appModel.generationBackend == .ggufQ6
+              (!consistencyIsSelected || modelLibrary.state(for: .consistencyLoRA) == .ready),
+              (!orbitIsSelected || (appModel.generationBackend == .diffusers && modelLibrary.state(for: .viewpointOrbit) == .ready)),
+              (!isExpertMode || orbitIsSelected || !enhancePrompt || hasCurrentPreparedPrompt
                 || modelLibrary.state(for: .promptEnhancer) == .ready),
+              (!appModel.nsfwFilterEnabled || modelLibrary.state(for: .nsfwClassifier) == .ready),
               let modelRoot = modelLibrary.installationURL(for: package) else {
             appModel.selection = .models
             return
@@ -949,27 +1825,21 @@ struct StudioView: View {
         do {
             projectStore.configure(rootURL: storage.generationOutputURL)
             let outputDirectory = try projectStore.imagesDirectoryForActiveProject()
-            let request = GenerationRequest(
-                mode: mode,
-                preset: preset,
-                prompt: preset.applyingStyle(to: prompt.trimmingCharacters(in: .whitespacesAndNewlines)),
-                originalPrompt: prompt,
-                negativePrompt: negativePrompt.trimmingCharacters(in: .whitespacesAndNewlines),
-                resolution: resolution,
-                customWidth: resolution == .custom ? customWidth : nil,
-                customHeight: resolution == .custom ? customHeight : nil,
-                steps: turboSelected ? 6 : Int(steps),
-                seed: UInt32(seed),
-                randomizeSeed: randomizeSeed,
-                enhancePrompt: enhancePrompt,
-                useViggleTurbo: turboSelected,
-                referenceImages: referenceURLs,
-                maskImage: maskURL
-            )
-            pendingVariantKind = kind
-            pendingParentVariantID = parentID
+            var request = makeGenerationRequest()
+            if isExpertMode && !orbitIsSelected && hasCurrentPreparedPrompt {
+                if usePreparedPrompt {
+                    request.enhancedPrompt = preparedPrompt.trimmingCharacters(in: .whitespacesAndNewlines)
+                } else {
+                    request.enhancePrompt = false
+                }
+            }
+            preparedPromptSource = nil
+            pendingVariantKind = finalParentVariantID == nil ? kind : .variation
+            pendingParentVariantID = finalParentVariantID ?? parentID
+            finalParentVariantID = nil
             lastPersistedOutputURL = nil
             previewOverrideURL = nil
+            revealedSafetyPreviewURL = nil
             previewRequest = request
             currentVariantID = nil
             keepStartupPreviewEmpty = false
@@ -979,10 +1849,13 @@ struct StudioView: View {
             generation.generate(
                 request: request,
                 modelRoot: modelRoot,
-                promptEnhancerRoot: enhancePrompt && appModel.generationBackend != .ggufQ6
+                promptEnhancerRoot: request.enhancePrompt && request.enhancedPrompt == nil
                     ? modelLibrary.installationURL(for: .promptEnhancer) : nil,
                 outputDirectory: outputDirectory,
-                backend: appModel.generationBackend
+                backend: appModel.generationBackend,
+                safetyFilterEnabled: appModel.nsfwFilterEnabled,
+                safetyModelRoot: appModel.nsfwFilterEnabled
+                    ? modelLibrary.installationURL(for: .nsfwClassifier) : nil
             )
         } catch {
             // Le coordinateur fournit un état d'erreur uniforme, même lorsqu'un dossier de sortie est indisponible.
@@ -998,13 +1871,25 @@ struct StudioView: View {
                 outputURL: url,
                 request: request,
                 kind: pendingVariantKind,
-                parentID: pendingParentVariantID
+                parentID: pendingParentVariantID,
+                contentSafety: generation.record?.contentSafety
             )
             currentVariantID = variant.id
             previewRequest = variant.request
             previewOverrideURL = projectStore.activeProject.map { projectStore.imageURL(for: variant, in: $0) }
             loadEvaluation(for: variant, imageURL: previewOverrideURL)
             lastPersistedOutputURL = url
+            if let project = projectStore.activeProject {
+                do {
+                    try projectStore.recordPromptHistory(
+                        request: variant.request,
+                        createdAt: variant.createdAt,
+                        projectName: project.name
+                    )
+                } catch {
+                    exportError = error.localizedDescription
+                }
+            }
         } catch {
             exportError = error.localizedDescription
         }
@@ -1012,6 +1897,7 @@ struct StudioView: View {
 
     private func upscale(_ source: URL, factor: Int) {
         guard let request = previewRequest ?? generation.record?.request else { return }
+        let sourceAssessment = currentVariant?.contentSafety
         isUpscaling = true
         Task {
             do {
@@ -1021,21 +1907,76 @@ struct StudioView: View {
                     factor: factor,
                     outputDirectory: directory
                 )
+                var assessment = sourceAssessment
+                if appModel.nsfwFilterEnabled {
+                    if let modelRoot = modelLibrary.installationURL(for: .nsfwClassifier),
+                       let libraryRoot = storage.modelsURL {
+                        do {
+                            let score = try await Self.safetyClassifier.classify(
+                                imageURL: output,
+                                modelRoot: modelRoot,
+                                runtimeModelRoot: libraryRoot,
+                                outputDirectory: directory
+                            )
+                            assessment = ContentSafetyAssessment(nsfwProbability: score)
+                        } catch {
+                            assessment = .unavailable
+                            await AppLog.shared.append(.error, category: "ContentSafety", error.localizedDescription)
+                        }
+                    } else {
+                        assessment = .unavailable
+                    }
+                }
                 let kind: ProjectVariant.Kind = factor == 2 ? .upscale2x : .upscale4x
                 let variant = try projectStore.addVariant(
                     outputURL: output,
                     request: request,
                     kind: kind,
-                    parentID: currentVariantID
+                    parentID: currentVariantID,
+                    contentSafety: assessment
                 )
                 currentVariantID = variant.id
                 previewRequest = variant.request
                 previewOverrideURL = output
+                revealedSafetyPreviewURL = nil
                 loadEvaluation(for: variant, imageURL: output)
             } catch {
                 exportError = error.localizedDescription
             }
             isUpscaling = false
+        }
+    }
+
+    private func retrySafetyAssessment(for variant: ProjectVariant) {
+        guard appModel.nsfwFilterEnabled, !isRetryingSafety, !isUpscaling,
+              let project = projectStore.activeProject else { return }
+        guard let modelRoot = modelLibrary.installationURL(for: .nsfwClassifier),
+              let libraryRoot = storage.modelsURL else {
+            exportError = L10n.Studio.nsfwModelRequired
+            return
+        }
+
+        let imageURL = projectStore.imageURL(for: variant, in: project)
+        isRetryingSafety = true
+        Task {
+            do {
+                let score = try await Self.safetyClassifier.classify(
+                    imageURL: imageURL,
+                    modelRoot: modelRoot,
+                    runtimeModelRoot: libraryRoot,
+                    outputDirectory: imageURL.deletingLastPathComponent()
+                )
+                try projectStore.saveContentSafety(
+                    ContentSafetyAssessment(nsfwProbability: score),
+                    for: variant.id,
+                    in: project.id
+                )
+                revealedSafetyPreviewURL = nil
+            } catch {
+                exportError = error.localizedDescription
+                await AppLog.shared.append(.error, category: "ContentSafety", error.localizedDescription)
+            }
+            isRetryingSafety = false
         }
     }
 
@@ -1058,6 +1999,13 @@ struct StudioView: View {
             previewRequest = variant?.request ?? request
             previewOverrideURL = variant.map { projectStore.imageURL(for: $0, in: project) }
             loadEvaluation(for: variant, imageURL: previewOverrideURL)
+            if appModel.nsfwFilterEnabled,
+               let variant,
+               variant.contentSafety?.verdict == .unavailable,
+               !retriedSafetyVariantIDs.contains(variant.id) {
+                retriedSafetyVariantIDs.insert(variant.id)
+                retrySafetyAssessment(for: variant)
+            }
         } else {
             generation.resetPresentation()
             currentVariantID = nil
@@ -1067,25 +2015,39 @@ struct StudioView: View {
             previewHasTransparentPixels = nil
         }
         variantPromptWasSaved = false
+        if projectStore.variantToRegenerateID == nil, let backend = request.backend {
+            appModel.generationBackend = backend
+        }
         mode = request.mode
-        preset = request.preset
+        preset = restorePrompts ? request.preset : .none
         prompt = restorePrompts ? (request.originalPrompt ?? request.prompt) : L10n.Studio.defaultPrompt
         negativePrompt = restorePrompts ? request.negativePrompt : ""
         promptsWereSaved = false
-        resolution = request.resolution
+        resolution = restorePrompts ? request.resolution : .square
         customWidth = request.customWidth ?? request.width
         customHeight = request.customHeight ?? request.height
-        steps = request.useViggleTurbo == true ? Double(request.preset.steps) : Double(request.steps)
+        syncSimpleCanvasSelection()
+        steps = restorePrompts
+            ? (request.useViggleTurbo == true ? Double(request.preset.steps) : Double(request.steps))
+            : Double(GenerationPreset.none.steps)
         seed = Int(request.seed)
         randomizeSeed = request.randomizeSeed
-        enhancePrompt = appModel.generationBackend != .ggufQ6 && request.enhancePrompt
+        enhancePrompt = request.enhancePrompt
         useViggleTurbo = request.useViggleTurbo == true
+        useConsistencyLoRA = request.useConsistencyLoRA == true
+        orbitSettings = request.viewpointOrbit ?? ViewpointOrbitSettings()
         referenceURLs = request.referenceImages
         maskURL = request.maskImage
     }
 
     private func clearWorkspace() {
         generation.resetPresentation()
+        finalParentVariantID = nil
+        preset = .none
+        resolution = .square
+        simpleImageFormat = .square
+        simpleImageSize = .standard
+        steps = Double(GenerationPreset.none.steps)
         previewOverrideURL = nil
         previewRequest = nil
         currentVariantID = nil
@@ -1096,6 +2058,9 @@ struct StudioView: View {
         referenceURLs = []
         prompt = L10n.Studio.defaultPrompt
         negativePrompt = ""
+        enhancePrompt = modelLibrary.state(for: .promptEnhancer) == .ready
+        useConsistencyLoRA = false
+        orbitSettings = ViewpointOrbitSettings()
         promptsWereSaved = false
     }
 
@@ -1168,10 +2133,36 @@ struct StudioView: View {
 
     private var selectedModelIsReady: Bool {
         modelLibrary.canGenerate(using: appModel.generationBackend)
-            && (appModel.generationBackend != .diffusers || !useViggleTurbo
+            && (!appModel.nsfwFilterEnabled || modelLibrary.state(for: .nsfwClassifier) == .ready)
+            && (!isExpertMode || orbitIsSelected || appModel.generationBackend != .diffusers || !useViggleTurbo
                 || modelLibrary.state(for: .viggleTurbo) == .ready)
-            && (!enhancePrompt || appModel.generationBackend == .ggufQ6
+            && (!consistencyIsSelected || modelLibrary.state(for: .consistencyLoRA) == .ready)
+            && (!orbitIsSelected || (appModel.generationBackend == .diffusers && modelLibrary.state(for: .viewpointOrbit) == .ready))
+            && (!isExpertMode || orbitIsSelected || !enhancePrompt || hasCurrentPreparedPrompt
                 || modelLibrary.state(for: .promptEnhancer) == .ready)
+    }
+
+    private var orbitIsSelected: Bool { isExpertMode && mode == .viewpointOrbit }
+
+    private var consistencyIsSelected: Bool {
+        isExpertMode && appModel.generationBackend == .diffusers && mode == .edit && useConsistencyLoRA
+    }
+
+    private var consistencyReferenceSize: (width: Int, height: Int)? {
+        guard referenceURLs.count == 1,
+              let source = CGImageSourceCreateWithURL(referenceURLs[0] as CFURL, nil),
+              let properties = CGImageSourceCopyPropertiesAtIndex(source, 0, nil) as NSDictionary?,
+              let width = (properties[kCGImagePropertyPixelWidth as String] as? NSNumber)?.intValue,
+              let height = (properties[kCGImagePropertyPixelHeight as String] as? NSNumber)?.intValue else {
+            return nil
+        }
+        return (width, height)
+    }
+
+    private var consistencyUsesUntestedResolution: Bool {
+        let width = resolution == .custom ? customWidth : resolution.width
+        let height = resolution == .custom ? customHeight : resolution.height
+        return width * height > 1_500_000
     }
 
     private var validProjectSelection: Binding<UUID?> {
@@ -1191,7 +2182,7 @@ struct StudioView: View {
     }
 
     private var customResolutionIsValid: Bool {
-        resolution != .custom || (
+        orbitIsSelected || resolution != .custom || (
             CanvasResolution.isValidCustomDimension(customWidth) &&
             CanvasResolution.isValidCustomDimension(customHeight)
         )

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+# SPDX-License-Identifier: GPL-3.0-only
+
 """Rewrite a NanoApple request with the locally installed Qwen PE model."""
 
 import argparse

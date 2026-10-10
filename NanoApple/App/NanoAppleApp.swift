@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import SwiftUI
 
 @main
@@ -29,6 +32,7 @@ struct NanoAppleApp: App {
                 }
                 .onChange(of: storage.modelsURL) { _, newValue in
                     modelLibrary.refresh(in: newValue)
+                    if !runtimeInstaller.state.isInstalling { runtimeInstaller.refresh(in: newValue) }
                 }
                 .onChange(of: storage.outputsURL) { _, _ in
                     projectStore.configure(rootURL: storage.generationOutputURL)

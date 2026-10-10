@@ -1,4 +1,31 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import SwiftUI
+
+struct ContentSafetyCover: View {
+    let assessment: ContentSafetyAssessment
+    let reveal: () -> Void
+
+    var body: some View {
+        VStack(spacing: 9) {
+            Image(systemName: "eye.slash.fill")
+                .font(.title2)
+            Text(assessment.verdict == .sensitive ? L10n.Safety.sensitive : L10n.Safety.unavailable)
+                .font(.callout.weight(.semibold))
+                .multilineTextAlignment(.center)
+            Button(L10n.Safety.reveal, action: reveal)
+                .buttonStyle(.bordered)
+            Text(L10n.Safety.detail)
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color(nsColor: .windowBackgroundColor))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+}
 
 struct SurfaceCard<Content: View>: View {
     @ViewBuilder let content: Content

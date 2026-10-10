@@ -1,6 +1,10 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 
 enum GenerationPreset: String, CaseIterable, Codable, Identifiable {
+    case none
     case balanced
     case fastDraft
     case highQuality
@@ -17,6 +21,7 @@ enum GenerationPreset: String, CaseIterable, Codable, Identifiable {
 
     var title: String {
         switch self {
+        case .none: String(localized: "preset.none", defaultValue: "Aucun")
         case .balanced: String(localized: "preset.balanced", defaultValue: "Équilibré")
         case .fastDraft: String(localized: "preset.fast", defaultValue: "Brouillon rapide")
         case .highQuality: String(localized: "preset.quality", defaultValue: "Haute qualité")
@@ -33,6 +38,7 @@ enum GenerationPreset: String, CaseIterable, Codable, Identifiable {
 
     var detail: String {
         switch self {
+        case .none: String(localized: "preset.none.detail", defaultValue: "Aucune consigne de style ajoutée au prompt.")
         case .balanced: String(localized: "preset.balanced.detail", defaultValue: "Bon compromis entre vitesse et détail.")
         case .fastDraft: String(localized: "preset.fast.detail", defaultValue: "Itération rapide avec moins d’étapes.")
         case .highQuality: String(localized: "preset.quality.detail", defaultValue: "Carré 2K et davantage d’étapes.")
@@ -49,6 +55,7 @@ enum GenerationPreset: String, CaseIterable, Codable, Identifiable {
 
     var systemImage: String {
         switch self {
+        case .none: "circle.slash"
         case .balanced: "slider.horizontal.3"
         case .fastDraft: "hare"
         case .highQuality: "diamond"
@@ -66,7 +73,7 @@ enum GenerationPreset: String, CaseIterable, Codable, Identifiable {
     var steps: Int {
         switch self {
         case .fastDraft: 20
-        case .balanced, .portrait, .socialPortrait: 30
+        case .none, .balanced, .portrait, .socialPortrait: 30
         case .storyboard, .anime: 28
         case .digitalIllustration, .product: 32
         case .photorealistic, .cinematic: 36

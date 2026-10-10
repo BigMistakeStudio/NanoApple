@@ -1,9 +1,13 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import SwiftUI
 
 struct AppShellView: View {
     @EnvironmentObject private var appModel: AppModel
     @EnvironmentObject private var storage: SecurityScopedStorage
     @EnvironmentObject private var modelLibrary: ModelLibrary
+    @EnvironmentObject private var runtime: RuntimeInstaller
 
     var body: some View {
         NavigationSplitView {
@@ -27,6 +31,18 @@ struct AppShellView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
         .navigationTitle(appModel.selection?.title ?? L10n.App.name)
+        .onAppear {
+            modelLibrary.refresh(in: storage.modelsURL)
+            if !runtime.state.isInstalling { runtime.refresh(in: storage.modelsURL) }
+            appModel.offerSetupIfNeeded(
+                modelReady: modelLibrary.canGenerate(using: appModel.generationBackend),
+                runtimeReady: runtime.state == .ready,
+                safetyReady: modelLibrary.state(for: .nsfwClassifier) == .ready
+            )
+        }
+        .sheet(isPresented: $appModel.isShowingSetup) {
+            FirstRunSetupView { appModel.dismissSetup() }
+        }
         .onChange(of: appModel.selection) { _, destination in
             if destination == .studio || destination == .models {
                 modelLibrary.refresh(in: storage.modelsURL)

@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 
 protocol ImageGenerationEngine: Sendable {
@@ -16,6 +19,7 @@ enum ImageGenerationError: LocalizedError {
     case engineNotInstalled
     case modelNotInstalled
     case promptEnhancerNotInstalled
+    case nsfwClassifierNotInstalled
     case externalStorageUnavailable
     case unsupportedConfiguration
     case executionFailed(String)
@@ -28,6 +32,8 @@ enum ImageGenerationError: LocalizedError {
             String(localized: "error.model_not_installed", defaultValue: "Les poids Qwen-Image 2.1 sont absents.")
         case .promptEnhancerNotInstalled:
             String(localized: "error.prompt_enhancer_not_installed", defaultValue: "Installez Qwen Prompt Enhancers dans Modèles pour améliorer le prompt.")
+        case .nsfwClassifierNotInstalled:
+            String(localized: "error.nsfw_classifier_not_installed", defaultValue: "Installez le filtre NSFW dans Modèles ou désactivez-le dans Réglages.")
         case .externalStorageUnavailable:
             String(localized: "error.storage_unavailable", defaultValue: "Le support de stockage sélectionné n’est pas disponible.")
         case .unsupportedConfiguration:
@@ -41,14 +47,16 @@ enum ImageGenerationError: LocalizedError {
 actor QwenPythonGenerationEngine: ImageGenerationEngine {
     let identifier: String
     private let textEncoderPackageID: String?
+    private let officialTurbo: Bool
     private var activeProcess: Process?
     private var preparedModelRoot: URL?
     private var preparedLibraryRoot: URL?
     private var preparedTextEncoderURL: URL?
 
-    init(textEncoderPackageID: String? = nil) {
+    init(textEncoderPackageID: String? = nil, officialTurbo: Bool = false) {
+        self.officialTurbo = officialTurbo
         self.textEncoderPackageID = textEncoderPackageID
-        identifier = textEncoderPackageID == nil
+        identifier = officialTurbo ? "nanoapple.qwen-image-2.1.turbo-mps" : textEncoderPackageID == nil
             ? "nanoapple.qwen-image-2.1.diffusers-mps"
             : "nanoapple.qwen-image-2.1.diffusers-heretic-mps"
     }
@@ -59,11 +67,11 @@ actor QwenPythonGenerationEngine: ImageGenerationEngine {
         }
         guard let libraryRoot = runtimeLibraryRoot(for: modelRoot),
               RuntimeInstaller.bundledPythonURL() != nil else {
-            await AppLog.shared.append(.error, category: "Generation", "Le runtime Python est introuvable pour le modèle \(modelRoot.lastPathComponent).")
+            await AppLog.shared.append(.error, category: "Generation", String(localized: "error.python_missing", defaultValue: "Le runtime Python est introuvable pour le modèle \(modelRoot.lastPathComponent)."))
             throw ImageGenerationError.engineNotInstalled
         }
         guard Bundle.main.url(forResource: "qwen_runtime", withExtension: "py") != nil else {
-            await AppLog.shared.append(.error, category: "Generation", "Le script qwen_runtime.py est absent du paquet de l’application.")
+            await AppLog.shared.append(.error, category: "Generation", String(localized: "error.runtime_script_missing", defaultValue: "Le script qwen_runtime.py est absent du paquet de l’application."))
             throw ImageGenerationError.engineNotInstalled
         }
         if let textEncoderPackageID {
@@ -96,7 +104,8 @@ actor QwenPythonGenerationEngine: ImageGenerationEngine {
               let python = RuntimeInstaller.bundledPythonURL() else {
             throw ImageGenerationError.engineNotInstalled
         }
-        if request.useViggleTurbo == true && !RuntimeInstaller.isReady(in: libraryRoot) {
+        if (request.useViggleTurbo == true || request.mode == .viewpointOrbit)
+            && !RuntimeInstaller.isReady(in: libraryRoot) {
             throw ImageGenerationError.engineNotInstalled
         }
         let packages = RuntimeInstaller.packagesDirectory(in: libraryRoot)
@@ -134,8 +143,34 @@ actor QwenPythonGenerationEngine: ImageGenerationEngine {
             "--output", outputURL.path,
             "--status", statusURL.path
         ]
+        if officialTurbo {
+            guard request.mode != .viewpointOrbit,
+                  request.useViggleTurbo != true, request.useConsistencyLoRA != true,
+                  textEncoderPackageID == nil else {
+                throw ImageGenerationError.unsupportedConfiguration
+            }
+            arguments.append("--official-turbo")
+        }
         if let preparedTextEncoderURL {
             arguments.append(contentsOf: ["--text-encoder", preparedTextEncoderURL.path])
+        }
+        if request.mode == .viewpointOrbit {
+            guard textEncoderPackageID == nil,
+                  let settings = request.viewpointOrbit, settings.isValid,
+                  request.referenceImages.count == 1,
+                  request.width == 768, request.height == 768, request.steps == 40,
+                  !request.enhancePrompt, request.enhancedPrompt == nil,
+                  request.useViggleTurbo != true, request.useConsistencyLoRA != true,
+                  request.maskImage == nil else {
+                throw ImageGenerationError.unsupportedConfiguration
+            }
+            let adapter = modelRoot.deletingLastPathComponent()
+                .appending(path: ModelPackage.viewpointOrbit.id, directoryHint: .isDirectory)
+                .appending(path: ModelPackage.viewpointOrbitWeightPath)
+            guard FileManager.default.fileExists(atPath: adapter.path) else {
+                throw ImageGenerationError.modelNotInstalled
+            }
+            arguments.append(contentsOf: ["--viewpoint-orbit", adapter.path])
         }
         if request.useViggleTurbo == true {
             guard textEncoderPackageID == nil else {
@@ -148,6 +183,21 @@ actor QwenPythonGenerationEngine: ImageGenerationEngine {
                 throw ImageGenerationError.modelNotInstalled
             }
             arguments.append(contentsOf: ["--viggle-turbo", adapter.path])
+        }
+        if request.useConsistencyLoRA == true {
+            guard textEncoderPackageID == nil,
+                  request.useViggleTurbo != true,
+                  request.mode == .edit,
+                  request.referenceImages.count == 1 else {
+                throw ImageGenerationError.unsupportedConfiguration
+            }
+            let adapter = modelRoot.deletingLastPathComponent()
+                .appending(path: ModelPackage.consistencyLoRA.id, directoryHint: .isDirectory)
+                .appending(path: "qwen-image-2.1-consistency.safetensors")
+            guard FileManager.default.fileExists(atPath: adapter.path) else {
+                throw ImageGenerationError.modelNotInstalled
+            }
+            arguments.append(contentsOf: ["--consistency-lora", adapter.path])
         }
         process.arguments = arguments
         process.standardOutput = log
@@ -187,7 +237,7 @@ actor QwenPythonGenerationEngine: ImageGenerationEngine {
 
             guard process.terminationStatus == 0,
                   FileManager.default.fileExists(atPath: outputURL.path) else {
-                let message = runtimeOutput.isEmpty ? "Le processus Qwen s’est arrêté sans produire d’image." : runtimeOutput
+                let message = runtimeOutput.isEmpty ? String(localized: "error.diffusers_no_image", defaultValue: "Le processus Qwen s’est arrêté sans produire d’image.") : runtimeOutput
                 await AppLog.shared.append(.error, category: "Generation", "Échec \(identifier) : \(message)")
                 throw ImageGenerationError.executionFailed(message)
             }

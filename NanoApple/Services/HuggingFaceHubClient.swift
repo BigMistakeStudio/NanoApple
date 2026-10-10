@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import CryptoKit
 import Foundation
 
@@ -15,6 +18,7 @@ struct HubInstallProgress: Sendable {
 }
 
 enum HubInstallationError: LocalizedError {
+    case missingLicenseDocuments
     case invalidRepository(String)
     case unsafePath(String)
     case insufficientSpace(required: Int64, available: Int64)
@@ -23,6 +27,8 @@ enum HubInstallationError: LocalizedError {
 
     var errorDescription: String? {
         switch self {
+        case .missingLicenseDocuments:
+            return String(localized: "installer.error.licenses", defaultValue: "Les licences des modèles sont absentes de l’application. Réinstallez NanoApple avant de télécharger les modèles.")
         case .invalidRepository(let repository):
             return String(localized: "installer.error.repository", defaultValue: "Impossible de lire le dépôt \(repository).")
         case .unsafePath(let path):
@@ -87,6 +93,11 @@ actor HuggingFaceHubClient {
         let packageDirectory = package.directory(in: libraryRoot)
         try FileManager.default.createDirectory(at: packageDirectory, withIntermediateDirectories: true)
         try ensureEnoughSpace(for: plans, in: packageDirectory)
+        guard let resources = Bundle.main.resourceURL?.appending(path: "Legal/Models"),
+              FileManager.default.fileExists(atPath: resources.path) else {
+            throw HubInstallationError.missingLicenseDocuments
+        }
+        try package.writeLicenseDocuments(to: packageDirectory, resources: resources)
 
         var completedBytes: Int64 = 0
         var snapshots: [ModelInstallationManifest.RepositorySnapshot] = []

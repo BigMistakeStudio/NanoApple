@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import AppKit
 import Foundation
 import OSLog
@@ -152,7 +155,7 @@ final class SecurityScopedStorage: ObservableObject {
             migrateLegacyOutputsIfNeeded()
         } catch {
             lastError = String(
-                localized: "storage.error.default_output",
+                localized: "storage.error.create_output",
                 defaultValue: "Le dossier Images/NanoApple n’a pas pu être créé : \(error.localizedDescription)"
             )
             logger.error("Could not create \(destination.path, privacy: .public): \(error.localizedDescription, privacy: .public)")

@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+# SPDX-License-Identifier: GPL-3.0-only
+
 """Create the standalone NanoApple Xcode project from its source tree."""
 
 from __future__ import annotations
@@ -23,9 +26,11 @@ def main() -> None:
         SOURCE_ROOT / "Resources" / "Localizable.xcstrings",
         SOURCE_ROOT / "Resources" / "Runtime" / "qwen_runtime.py",
         SOURCE_ROOT / "Resources" / "Runtime" / "prompt_enhancer.py",
+        SOURCE_ROOT / "Resources" / "Runtime" / "nsfw_classifier.py",
         SOURCE_ROOT / "Resources" / "Runtime" / "uv",
         SOURCE_ROOT / "Resources" / "Runtime" / "Python",
         SOURCE_ROOT / "Resources" / "GGUF",
+        SOURCE_ROOT / "Resources" / "Legal",
     ]
 
     project_id = oid("project", APP)
@@ -56,7 +61,7 @@ def main() -> None:
             file_type = "text.json.xcstrings"
         elif path.name == "uv":
             file_type = "compiled.mach-o.executable"
-        elif path.name in {"Python", "GGUF"}:
+        elif path.name in {"Python", "GGUF", "Legal"}:
             file_type = "folder"
         else:
             file_type = "text.script.python"

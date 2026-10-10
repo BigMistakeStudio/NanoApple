@@ -1,7 +1,11 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import SwiftUI
 
 struct ModelManagerView: View {
     @Environment(\.openWindow) private var openWindow
+    @EnvironmentObject private var appModel: AppModel
     @EnvironmentObject private var storage: SecurityScopedStorage
     @EnvironmentObject private var modelLibrary: ModelLibrary
     @EnvironmentObject private var installer: ModelInstaller
@@ -10,11 +14,27 @@ struct ModelManagerView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(L10n.Models.title).font(.largeTitle.bold())
-                    Text(L10n.Models.subtitle).foregroundStyle(.secondary)
+                HStack(alignment: .top) {
+                    VStack(alignment: .leading, spacing: 5) {
+                        Text(L10n.Models.title).font(.largeTitle.bold())
+                        Text(L10n.Models.subtitle).foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    Button(L10n.Setup.reopen, systemImage: "list.number") {
+                        appModel.isShowingSetup = true
+                    }
+                    .buttonStyle(.bordered)
                 }
 
+                SurfaceCard {
+                    VStack(alignment: .leading, spacing: 14) {
+                        MacModelGuideView()
+                        Button("Choisir le Turbo conseillé pour ce Mac") {
+                            appModel.generationBackend = ModelAdvice.preferredTurbo()
+                        }
+                        .disabled(installer.isBusy || ModelAdvice.assess(ModelAdvice.preferredTurbo()).rating == .incompatible)
+                    }
+                }
                 storageCard
                 runtimeCard
                 completeInstallationCard
@@ -67,8 +87,8 @@ struct ModelManagerView: View {
                     .frame(width: 44, height: 44)
                     .background(Color.accentColor.opacity(0.12), in: RoundedRectangle(cornerRadius: 11))
                 VStack(alignment: .leading, spacing: 3) {
-                    Text(L10n.Models.installAll).font(.headline)
-                    Text(L10n.Models.installAllDetail)
+                    Text("Installer le modèle choisi").font(.headline)
+                    Text(String(localized: "models.selected.summary", defaultValue: "\(appModel.generationBackend.name) · \(appModel.generationBackend.modelPackage.approximateSize) pour le modèle"))
                         .font(.callout)
                         .foregroundStyle(.secondary)
                     Text(L10n.Models.sequentialNote)
@@ -76,12 +96,12 @@ struct ModelManagerView: View {
                         .foregroundStyle(.tertiary)
                 }
                 Spacer()
-                Button(L10n.Models.installAll) {
+                Button("Installer le modèle choisi") {
                     guard let root = storage.modelsURL else { return }
-                    installer.install(ModelPackage.defaultPackages, in: root, modelLibrary: modelLibrary)
+                    installer.install(appModel.generationBackend.requiredPackages + (appModel.nsfwFilterEnabled ? [.nsfwClassifier] : []), in: root, modelLibrary: modelLibrary)
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(storage.modelsURL == nil || installer.isBusy)
+                .disabled(storage.modelsURL == nil || installer.isBusy || appModel.generationBackend.advice.rating == .incompatible)
             }
         }
     }
@@ -167,6 +187,7 @@ struct ModelManagerView: View {
     private func packageCard(_ package: ModelPackage) -> some View {
         let installState = installer.state(for: package)
         let isReady = modelLibrary.state(for: package) == .ready || installState == .installed
+        let backend = GenerationBackend.allCases.first { $0.modelPackage == package }
 
         return SurfaceCard {
             VStack(alignment: .leading, spacing: 14) {
@@ -178,7 +199,7 @@ struct ModelManagerView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         HStack {
                             Text(package.name).font(.headline)
-                            Text(package.requirement == .required ? L10n.Models.required : L10n.Models.optional)
+                            Text(package == appModel.generationBackend.modelPackage ? String(localized: "models.selected.badge", defaultValue: "Modèle choisi") : L10n.Models.optional)
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
                         }
@@ -192,6 +213,22 @@ struct ModelManagerView: View {
                     StatusBadge(title: badgeTitle(for: installState, ready: isReady), color: badgeColor(for: installState, ready: isReady))
                 }
 
+                if let backend {
+                    ModelAdviceView(backend: backend)
+                    if backend.isTurbo {
+                        HStack {
+                            Text("Taille totale du paquet : \(package.approximateSize)")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                            if appModel.generationBackend != backend {
+                                Button("Choisir ce modèle") { appModel.generationBackend = backend }
+                                    .disabled(installer.isBusy || backend.advice.rating == .incompatible)
+                            }
+                        }
+                    }
+                }
+                ModelLicenseView(package: package)
                 installationDetails(installState)
 
                 HStack {
@@ -209,7 +246,7 @@ struct ModelManagerView: View {
                             installer.install([package], in: root, modelLibrary: modelLibrary)
                         }
                         .buttonStyle(.borderedProminent)
-                        .disabled(storage.modelsURL == nil || installer.isBusy)
+                        .disabled(storage.modelsURL == nil || installer.isBusy || backend?.advice.rating == .incompatible)
                     }
                 }
             }

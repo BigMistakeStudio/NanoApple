@@ -1,3 +1,6 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 
 actor PromptEnhancer {
@@ -75,7 +78,7 @@ actor PromptEnhancer {
                   !result.enhancedPrompt.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                 let output = String(decoding: (try? Data(contentsOf: logURL)) ?? Data(), as: UTF8.self)
                 throw ImageGenerationError.executionFailed(output.isEmpty
-                    ? "L’améliorateur de prompt n’a pas renvoyé de résultat."
+                    ? String(localized: "error.enhancer_no_result", defaultValue: "L’améliorateur de prompt n’a pas renvoyé de résultat.")
                     : output)
             }
             await AppLog.shared.append(category: "Prompt Enhancer", "Prompt enrichi pour \(suffix).")

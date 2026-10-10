@@ -1,8 +1,11 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 
 @MainActor
 final class RuntimeInstaller: ObservableObject {
-    private static let diffusersRevision = "cc8644b447d8f11074d3df06d0ee0e3e7c91bf75"
+    private static let diffusersRevision = "1d5d056ecff3a8c1d887a7dd1aa66ca4a0323458"
 
     enum State: Equatable {
         case unavailable
@@ -55,7 +58,7 @@ final class RuntimeInstaller: ObservableObject {
                 try FileManager.default.createDirectory(at: packages, withIntermediateDirectories: true)
 
                 let hasPreviousRuntime = FileManager.default.fileExists(
-                    atPath: runtime.appending(path: ".ready-v3").path
+                    atPath: runtime.appending(path: ".ready-v5").path
                 ) && FileManager.default.fileExists(atPath: packages.appending(path: "diffusers").path)
                 state = .installing(String(localized: "runtime.install.packages", defaultValue: "Installation de PyTorch Metal et Diffusers…"))
                 var packagesToInstall = ["peft"]
@@ -63,7 +66,7 @@ final class RuntimeInstaller: ObservableObject {
                     packagesToInstall = [
                         "torch", "torchvision",
                         "https://github.com/huggingface/diffusers/archive/\(Self.diffusersRevision).zip",
-                        "transformers", "accelerate", "safetensors", "pillow", "sentencepiece", "peft"
+                        "transformers>=5.17.0", "accelerate", "safetensors", "pillow", "sentencepiece", "peft"
                     ]
                 }
                 try await RuntimeCommand.run(uv, [
@@ -76,11 +79,11 @@ final class RuntimeInstaller: ObservableObject {
                     python,
                     [
                         "-c",
-                        "import torch, diffusers, peft; from diffusers import QwenImage21Pipeline, QwenImage21Transformer2DModel, AutoencoderKLQwenImage21; assert torch.backends.mps.is_available(), 'MPS unavailable'"
+                        "import torch, diffusers, peft; from diffusers import QwenImage21Pipeline, QwenImage21Transformer2DModel, AutoencoderKLQwenImage21; import inspect; assert 'sample_sigmas' in inspect.signature(QwenImage21Pipeline.__init__).parameters, 'Turbo sampling unavailable'; assert torch.backends.mps.is_available(), 'MPS unavailable'"
                     ],
                     environment: environment
                 )
-                try Data("NanoApple runtime 4\nDiffusers \(Self.diffusersRevision)\n".utf8)
+                try Data("NanoApple runtime 5\nDiffusers \(Self.diffusersRevision)\n".utf8)
                     .write(to: Self.readyMarker(in: libraryRoot), options: .atomic)
                 state = .ready
                 await AppLog.shared.append(category: "Runtime", "Runtime prêt. Python embarqué, PyTorch, Diffusers et MPS ont été vérifiés.")
@@ -108,7 +111,7 @@ final class RuntimeInstaller: ObservableObject {
     }
 
     nonisolated static func readyMarker(in libraryRoot: URL) -> URL {
-        runtimeDirectory(in: libraryRoot).appending(path: ".ready-v4")
+        runtimeDirectory(in: libraryRoot).appending(path: ".ready-v5")
     }
 
     nonisolated static func bundledPythonURL() -> URL? {
@@ -168,7 +171,7 @@ private enum RuntimeCommand {
                 guard process.terminationStatus == 0 else {
                     throw RuntimeCommandError.failed(
                         message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                            ? "Le processus d’installation a échoué (code \(process.terminationStatus))."
+                            ? String(localized: "runtime.error.exit_status", defaultValue: "Le processus d’installation a échoué (code \(process.terminationStatus)).")
                             : message
                     )
                 }

@@ -1,0 +1,20 @@
+Qwen-Image-2.1 Text Encoder - Heretic
+=====================================
+
+This repository redistributes model weights derived from:
+
+  Qwen3-VL-8B-Instruct
+  https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct
+  Copyright (c) Alibaba Cloud / Qwen
+  Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+Qwen-Image-2.1 uses this same model, unmodified, as its text encoder; the weights
+here match Qwen3-VL-8B-Instruct except for the modifications below.
+
+Modifications from the original:
+  - Refusal directions removed via directional ablation (Heretic,
+    https://github.com/p-e-w/heretic). Affected tensors: self_attn.o_proj and
+    mlp.down_proj in a subset of layers; all other weights are unchanged.
+
+You must comply with the Apache License, Version 2.0 when using or redistributing
+these weights.

@@ -1,13 +1,16 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
 
 actor QwenGGUFGenerationEngine: ImageGenerationEngine {
-    let identifier = "nanoapple.qwen-image-2.1.gguf-q6-metal"
+    let identifier: String
+    private let variant: QwenTurboGGUFVariant
 
-    private enum FileName {
-        static let diffusion = "qwen-image-2.1-Q6_K.gguf"
-        static let textEncoder = "text_encoders/Qwen3VL-8B-Instruct-Q4_K_M.gguf"
-        static let visionEncoder = "text_encoders/mmproj-Qwen3VL-8B-Instruct-Q8_0.gguf"
-        static let vae = "vae/qwen_image_2.1_vae_bf16.safetensors"
+    init(variant: QwenTurboGGUFVariant) {
+        self.variant = variant
+        identifier = variant == .q8 ? "nanoapple.qwen-image-2.1.turbo-q8-metal"
+            : "nanoapple.qwen-image-2.1.turbo-atomic-q5-metal"
     }
 
     private var activeProcess: Process?
@@ -23,11 +26,11 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
             withExtension: nil,
             subdirectory: "GGUF"
         ), FileManager.default.isExecutableFile(atPath: executable.path) else {
-            await AppLog.shared.append(.error, category: "GGUF", "Le moteur stable-diffusion.cpp embarqué est introuvable.")
+            await AppLog.shared.append(.error, category: "GGUF", String(localized: "error.gguf_engine_missing", defaultValue: "Le moteur stable-diffusion.cpp embarqué est introuvable."))
             throw ImageGenerationError.engineNotInstalled
         }
 
-        for relativePath in [FileName.diffusion, FileName.textEncoder, FileName.visionEncoder, FileName.vae] {
+        for relativePath in variant.requiredFiles {
             let file = modelRoot.appending(path: relativePath)
             guard FileManager.default.fileExists(atPath: file.path) else {
                 await AppLog.shared.append(.error, category: "GGUF", "Fichier requis absent : \(relativePath)")
@@ -37,7 +40,7 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
 
         executableURL = executable
         preparedModelRoot = modelRoot
-        await AppLog.shared.append(category: "GGUF", "Modèle Qwen GGUF Q6 prêt pour \(modelRoot.path).")
+        await AppLog.shared.append(category: "GGUF", "Modèle Qwen Turbo GGUF prêt pour \(modelRoot.path).")
     }
 
     func generate(
@@ -48,7 +51,8 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
         guard let executable = executableURL, let modelRoot = preparedModelRoot else {
             throw ImageGenerationError.engineNotInstalled
         }
-        guard !request.requestsTransparency, request.useViggleTurbo != true else {
+        guard request.mode != .viewpointOrbit, request.useViggleTurbo != true,
+              request.useConsistencyLoRA != true else {
             throw ImageGenerationError.unsupportedConfiguration
         }
 
@@ -64,56 +68,11 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
             try? FileManager.default.removeItem(at: logURL)
         }
 
-        var arguments = [
-            "--diffusion-model", modelRoot.appending(path: FileName.diffusion).path,
-            "--llm", modelRoot.appending(path: FileName.textEncoder).path,
-            "--vae", modelRoot.appending(path: FileName.vae).path,
-            "--prompt", request.prompt,
-            "--negative-prompt", request.negativePrompt,
-            "--output", outputURL.path,
-            "--width", String(request.width),
-            "--height", String(request.height),
-            "--steps", String(request.steps),
-            "--seed", request.randomizeSeed ? "-1" : String(request.seed),
-            "--cfg-scale", "2.5",
-            "--sampling-method", "euler",
-            "--flow-shift", "3",
-            "--rng", "cpu",
-            "--diffusion-fa",
-            "--offload-to-cpu",
-            "--mmap",
-            "--log-level", "info"
-        ]
-
         let usesReducedMemoryMode = ProcessInfo.processInfo.physicalMemory < 32 * 1_024 * 1_024 * 1_024
+        let arguments = variant.arguments(request: request, modelRoot: modelRoot,
+                                          outputURL: outputURL, reducedMemory: usesReducedMemoryMode)
         if usesReducedMemoryMode {
-            arguments.append("--vae-tiling")
-        }
-
-        if usesReducedMemoryMode {
-            arguments.append(contentsOf: ["--max-vram", "-4", "--stream-layers"])
-            await AppLog.shared.append(
-                category: "GGUF",
-                "Mode mémoire réduite activé : segmentation Metal, streaming des couches et VAE tuilé."
-            )
-        }
-
-        if !request.referenceImages.isEmpty {
-            arguments.append(contentsOf: [
-                "--llm_vision", modelRoot.appending(path: FileName.visionEncoder).path
-            ])
-            for reference in request.referenceImages {
-                arguments.append(contentsOf: ["--ref-image", reference.path])
-            }
-            arguments.append(contentsOf: ["--ref-image-args", "preset=qwen,ref_index_mode=increase"])
-        }
-
-        if let mask = request.maskImage, let source = request.referenceImages.first {
-            arguments.append(contentsOf: [
-                "--init-img", source.path,
-                "--mask", mask.path,
-                "--strength", "1.0"
-            ])
+            await AppLog.shared.append(category: "GGUF", "Mode mémoire réduite : segmentation Metal et VAE tuilé.")
         }
 
         let process = Process()
@@ -130,11 +89,8 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
 
         await AppLog.shared.append(
             category: "GGUF",
-            "Début \(identifier) — \(request.width)×\(request.height), \(request.steps) étapes, \(request.referenceImages.count) référence(s)."
+            "Début \(identifier) — \(request.width)×\(request.height), 8 étapes, \(request.referenceImages.count) référence(s)."
         )
-        if request.enhancePrompt {
-            await AppLog.shared.append(.warning, category: "GGUF", "L’amélioration de prompt n’est pas appliquée par le modèle GGUF.")
-        }
 
         do {
             progress(0.01)
@@ -145,7 +101,7 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
             while process.isRunning {
                 try Task.checkCancellation()
                 if let data = try? Data(contentsOf: logURL),
-                   let stepProgress = Self.stepProgress(in: data, stepCount: request.steps) {
+                   let stepProgress = Self.stepProgress(in: data, stepCount: 8) {
                     lastProgress = max(lastProgress, 0.08 + (stepProgress * 0.88))
                     progress(lastProgress)
                 }
@@ -161,7 +117,7 @@ actor QwenGGUFGenerationEngine: ImageGenerationEngine {
             guard process.terminationStatus == 0,
                   FileManager.default.fileExists(atPath: outputURL.path) else {
                 let message = engineOutput.isEmpty
-                    ? "Le modèle GGUF s’est arrêté sans produire d’image."
+                    ? String(localized: "error.gguf_no_image", defaultValue: "Le modèle GGUF s’est arrêté sans produire d’image.")
                     : engineOutput
                 throw ImageGenerationError.executionFailed(message)
             }

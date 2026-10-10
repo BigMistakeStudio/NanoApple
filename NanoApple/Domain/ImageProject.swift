@@ -1,4 +1,29 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
 import Foundation
+
+struct ContentSafetyAssessment: Codable, Equatable, Sendable {
+    enum Verdict: String, Codable, Sendable { case clear, sensitive, unavailable }
+
+    static let threshold = 0.50
+    let verdict: Verdict
+    let nsfwProbability: Double?
+
+    init(nsfwProbability: Double) {
+        self.nsfwProbability = nsfwProbability
+        verdict = nsfwProbability >= Self.threshold ? .sensitive : .clear
+    }
+
+    static let unavailable = ContentSafetyAssessment(verdict: .unavailable, nsfwProbability: nil)
+
+    private init(verdict: Verdict, nsfwProbability: Double?) {
+        self.verdict = verdict
+        self.nsfwProbability = nsfwProbability
+    }
+
+    var needsCover: Bool { verdict != .clear }
+}
 
 struct ImageProject: Identifiable, Codable, Sendable {
     var id: UUID
@@ -48,6 +73,7 @@ struct ProjectVariant: Identifiable, Codable, Sendable {
     var sourcePixelWidth: Int?
     var sourcePixelHeight: Int?
     var evaluation: ImageEvaluation?
+    var contentSafety: ContentSafetyAssessment?
 
     init(
         kind: Kind,
@@ -55,7 +81,8 @@ struct ProjectVariant: Identifiable, Codable, Sendable {
         relativeImagePath: String,
         request: GenerationRequest,
         sourcePixelWidth: Int? = nil,
-        sourcePixelHeight: Int? = nil
+        sourcePixelHeight: Int? = nil,
+        contentSafety: ContentSafetyAssessment? = nil
     ) {
         id = UUID()
         createdAt = Date()
@@ -65,6 +92,7 @@ struct ProjectVariant: Identifiable, Codable, Sendable {
         self.request = request
         self.sourcePixelWidth = sourcePixelWidth
         self.sourcePixelHeight = sourcePixelHeight
+        self.contentSafety = contentSafety
         evaluation = nil
     }
 }

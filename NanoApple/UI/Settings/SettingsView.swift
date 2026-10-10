@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2026 Frédéric Genevey / BigMistakeStudio
+// SPDX-License-Identifier: GPL-3.0-only
+
+import AppKit
 import SwiftUI
 
 struct SettingsView: View {
@@ -18,7 +22,7 @@ struct SettingsView: View {
             Section(L10n.Settings.engine) {
                 Picker(L10n.Settings.engineChoice, selection: $appModel.generationBackend) {
                     ForEach(GenerationBackend.allCases) { backend in
-                        Text(backend.name).tag(backend)
+                        Text(backend.choiceTitle).tag(backend)
                     }
                 }
                 LabeledContent(appModel.generationBackend.name) {
@@ -28,6 +32,8 @@ struct SettingsView: View {
                     )
                 }
                 Text(appModel.generationBackend.detail).foregroundStyle(.secondary)
+                ModelAdviceView(backend: appModel.generationBackend)
+                Text(MacHardwareProfile.current.summary).font(.caption).foregroundStyle(.secondary)
             }
 
             Section(L10n.Settings.output) {
@@ -46,6 +52,22 @@ struct SettingsView: View {
 
             Section(L10n.Settings.privacy) {
                 Label(L10n.Settings.privacyDetail, systemImage: "lock.shield")
+                Toggle(L10n.Settings.nsfwFilter, isOn: $appModel.nsfwFilterEnabled)
+                Text(L10n.Settings.nsfwFilterDetail).foregroundStyle(.secondary)
+                if appModel.nsfwFilterEnabled && modelLibrary.state(for: .nsfwClassifier) != .ready {
+                    Label(L10n.Settings.nsfwModelRequired, systemImage: "exclamationmark.triangle")
+                        .foregroundStyle(.orange)
+                    Button(L10n.Settings.openModels) { appModel.selection = .models }
+                }
+            }
+
+            Section(String(localized: "settings.licenses.title", defaultValue: "Licences")) {
+                Button(String(localized: "settings.licenses.open", defaultValue: "Voir les licences et attributions")) {
+                    if let resources = Bundle.main.resourceURL {
+                        let notices = resources.appending(path: "Legal/THIRD_PARTY_NOTICES.md")
+                        NSWorkspace.shared.activateFileViewerSelecting([notices])
+                    }
+                }
             }
 
             Section(L10n.Settings.language) {
